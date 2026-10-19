@@ -1,3 +1,9 @@
+"""Test citation passage extraction and unavailable arXiv HTML responses.
+
+Run from the project root with:
+    python3.12 -m pytest tests/test_passages.py
+"""
+
 from unittest.mock import MagicMock
 from urllib.error import HTTPError
 

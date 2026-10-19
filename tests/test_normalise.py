@@ -1,3 +1,9 @@
+"""Test normalization of ADS records.
+
+Run from the project root with:
+    python3.12 -m pytest tests/test_normalise.py
+"""
+
 from src.normalise import normalise_record
 
 

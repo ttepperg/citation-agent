@@ -1,7 +1,7 @@
 """Summarize papers citing an ADS record.
 
 From the project root, set ADS_API_TOKEN and OPENAI_API_KEY, then run:
-    python3.12 -m src.cli TARGET_BIBCODE
+    python3.12 -m src.cli "TARGET_BIBCODE"
 """
 
 import argparse

@@ -1,3 +1,9 @@
+"""Test OpenAI citation summarization using mocked API responses.
+
+Run from the project root with:
+    python3.12 -m pytest tests/test_summarize.py
+"""
+
 import io
 import json
 from unittest.mock import MagicMock

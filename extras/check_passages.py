@@ -1,4 +1,8 @@
-"""Check citation passage matching on a real ADS paper."""
+"""Check citation passage matching on a real ADS paper.
+
+From the project root, set ADS_API_TOKEN and run:
+    python3.12 -m extras.check_passages "TARGET_BIBCODE" "CITING_BIBCODE"
+"""
 
 import sys
 from urllib.error import HTTPError, URLError
@@ -57,7 +61,8 @@ def check_known_citation(target_bibcode, citing_paper):
 if __name__ == "__main__":
     if len(sys.argv) != 3:
         raise SystemExit(
-            "Usage: python -m extras.check_passages TARGET_BIBCODE CITING_BIBCODE"
+            "Usage: python3.12 -m extras.check_passages "
+            '"TARGET_BIBCODE" "CITING_BIBCODE"'
         )
     try:
         target_bibcode, citing_bibcode = sys.argv[1:]

@@ -1,3 +1,9 @@
+"""Test the live citation-check wrapper using mocked network calls.
+
+Run from the project root with:
+    python3.12 -m pytest tests/test_check_passages.py
+"""
+
 from unittest.mock import MagicMock, call
 
 from extras import check_passages

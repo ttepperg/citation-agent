@@ -1,3 +1,9 @@
+"""Test ADS record retrieval and normalization.
+
+Run from the project root with:
+    python3.12 -m pytest tests/test_ads.py
+"""
+
 import json
 from io import BytesIO
 

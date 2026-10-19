@@ -19,7 +19,7 @@ export OPENAI_API_KEY="your OpenAI API key"
 Run the pipeline from the project root with a target ADS bibcode:
 
 ```sh
-python3.12 -m src.cli 1998AJ....116.1009R
+python3.12 -m src.cli "1998AJ....116.1009R"
 ```
 
 The command prints JSON containing each citing paper's normalized record,
@@ -34,12 +34,20 @@ python3.12 -c 'from src.ads import get_citing_papers_normalised; print(get_citin
 
 Each result contains `bibcode`, `title`, `author`, `year`, and `doi`. The default query returns up to 10 citing papers.
 
-## Live citation check
+## One-paper live checks
 
-With `ADS_API_TOKEN` set, run the live check from the project root with a target bibcode and a citing-paper bibcode:
+These optional scripts check a known target and citing-paper pair. Set
+`ADS_API_TOKEN` before either command. To extract citation passages only, run
+from the project root:
 
 ```sh
-python3.12 -m extras.check_passages 2016A&A...594A..13P 2020A&A...641A...6P
+python3.12 -m extras.check_passages "2016A&A...594A..13P" "2020A&A...641A...6P"
 ```
 
-The script retrieves both records from ADS, resolves the citing paper's arXiv HTML, and prints the in-text passages linked to the target paper.
+To also summarize the citation passages, set `OPENAI_API_KEY` and run:
+
+```sh
+python3.12 -m extras.check_summary "2016A&A...594A...13P" "2020A&A...641A...6P"
+```
+
+The main `src.cli` pipeline does not require either of these one-paper scripts.
