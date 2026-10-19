@@ -1,6 +1,10 @@
 """Find in-text passages linked to a target paper's bibliography entry."""
 
+import json
+import os
 from html.parser import HTMLParser
+from urllib.error import HTTPError, URLError
+from urllib.request import Request, urlopen
 
 
 class _CitationParser(HTMLParser):
@@ -82,3 +86,59 @@ def find_citation_passages(html, target_record):
         for paragraph in parser.paragraphs
         if any(ref in target_references for ref in paragraph["references"])
     ]
+
+
+def get_citation_passages(target_record, citing_paper, token=None):
+    """Fetch a citing paper's arXiv HTML and return passages citing target."""
+    citing_bibcode = citing_paper["bibcode"]
+    token = token or os.environ.get("ADS_API_TOKEN")
+    if not token:
+        raise ValueError("Set ADS_API_TOKEN or pass an ADS API token.")
+    resolver_request = Request(
+        f"https://api.adsabs.harvard.edu/v1/resolver/"
+        f"{citing_bibcode}/eprint_html",
+        headers={"Authorization": f"Bearer {token}"},
+    )
+    _, resolver_data = _get_url(
+        resolver_request, "ADS link resolver", read=True, allow_404=True
+    )
+    if resolver_data is None:
+        return []
+    resolved_url = json.loads(resolver_data)["link"]
+    html_url = resolved_url.replace("arxiv.org/abs/", "arxiv.org/html/", 1)
+    _, html = _get_url(
+        Request(html_url, headers={"User-Agent": "citation-agent/0.1"}),
+        "arXiv HTML download",
+        read=True,
+        allow_404=True,
+        allow_403=True,
+    )
+    if html is None:
+        return []
+    return find_citation_passages(
+        html.decode("utf-8", errors="replace"), target_record
+    )
+
+
+def _get_url(url, service, read=False, allow_404=False, allow_403=False):
+    for attempt in range(2):
+        try:
+            with urlopen(url, timeout=30) as response:
+                return response.geturl(), response.read() if read else None
+        except HTTPError as exc:
+            if (allow_404 and exc.code == 404) or (
+                allow_403 and exc.code == 403
+            ):
+                return None, None
+            raise RuntimeError(f"{service} returned HTTP {exc.code}.") from exc
+        except (TimeoutError, URLError) as exc:
+            reason = getattr(exc, "reason", exc)
+            if isinstance(reason, TimeoutError) and attempt == 0:
+                continue
+            if isinstance(reason, TimeoutError):
+                raise TimeoutError(
+                    f"Timed out contacting {service}, after one retry."
+                ) from exc
+            raise RuntimeError(
+                f"Network error contacting {service}: {reason}"
+            ) from exc

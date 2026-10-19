@@ -1,3 +1,9 @@
+from unittest.mock import MagicMock
+from urllib.error import HTTPError
+
+import pytest
+
+from src import passages
 from src.passages import find_citation_passages
 
 
@@ -75,3 +81,30 @@ def test_find_citation_passages_ignores_ambiguous_author_year_references():
     }
 
     assert find_citation_passages(html, target) == []
+
+
+@pytest.mark.parametrize("status", [403, 404])
+def test_get_citation_passages_returns_empty_when_arxiv_html_unavailable(
+    monkeypatch, status
+):
+    resolver_response = MagicMock()
+    resolver_response.__enter__.return_value.read.return_value = (
+        b'{"link": "https://arxiv.org/abs/1234.56789"}'
+    )
+    open_url = MagicMock(
+        side_effect=[
+            resolver_response,
+            HTTPError(
+                "https://arxiv.org/html/1234.56789",
+                status,
+                "Unavailable",
+                {},
+                None,
+            ),
+        ]
+    )
+    monkeypatch.setattr(passages, "urlopen", open_url)
+
+    assert passages.get_citation_passages(
+        {"bibcode": "target"}, {"bibcode": "citing"}, token="token"
+    ) == []
