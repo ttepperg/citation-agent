@@ -2,7 +2,7 @@
 
 ## Report usability
 
-- [ ] Open ADS paper links in a new tab (`target="_blank"`) and add `rel="noopener"`.
+- [x] Open ADS paper links in a new tab (`target="_blank"`) and add `rel="noopener"`.
 
 ## Retrieval and summary reliability
 

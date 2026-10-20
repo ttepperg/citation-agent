@@ -8,8 +8,8 @@ def render_report(target_record, results):
     """Return an HTML page for workflow results."""
     target_title = escape(target_record.get("title") or "Untitled paper")
     target_url = escape(
-        "https://ui.adsabs.harvard.edu/abs/"
-        + quote(target_record.get("bibcode") or "", safe=""),
+        "https://ui.adsabs.harvard.edu/abs/" +
+        quote(target_record.get("bibcode") or "", safe=""),
         quote=True,
     )
     cards = []
@@ -18,8 +18,8 @@ def render_report(target_record, results):
         title = escape(record.get("title") or "Untitled paper")
         bibcode = escape(record.get("bibcode") or "")
         paper_url = escape(
-            "https://ui.adsabs.harvard.edu/abs/"
-            + quote(record.get("bibcode") or "", safe=""),
+            "https://ui.adsabs.harvard.edu/abs/" +
+            quote(record.get("bibcode") or "", safe=""),
             quote=True,
         )
         year = escape(str(record.get("year") or "Year unknown"))
@@ -28,7 +28,8 @@ def render_report(target_record, results):
             f"<li>{escape(passage)}</li>" for passage in result["passages"]
         ) or "<li>No citation passages found.</li>"
         cards.append(
-            f'<article><h2><a href="{paper_url}">{title}</a> '
+            f'<article><h2><a href="{paper_url}" target="_blank" '
+            f'rel="noopener">{title}</a> '
             f"<small>({year})</small></h2>"
             f"<p class=\"bibcode\">{bibcode}</p>"
             f"<p>{summary}</p>"
@@ -47,7 +48,8 @@ def render_report(target_record, results):
         "a{color:#1769aa;text-decoration:none}a:hover{text-decoration:underline}"
         "h2{margin:.2rem 0}.bibcode,small{color:#586575}"
         "details{margin-top:1rem}li{margin:.5rem 0}</style></head><body>"
-        f'<h1>Citation report: <a href="{target_url}">{target_title}</a></h1>'
-        + "".join(cards)
-        + "</body></html>"
+        f'<h1>Citation report: <a href="{target_url}" target="_blank" '
+        f'rel="noopener">{target_title}</a></h1>' +
+        "".join(cards) +
+        "</body></html>"
     )
