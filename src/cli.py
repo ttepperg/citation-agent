@@ -6,6 +6,7 @@ From the project root, set ADS_API_TOKEN and OPENAI_API_KEY, then run:
 
 import argparse
 from pathlib import Path
+from urllib.parse import quote
 
 from src.report import render_report
 from src.workflow import summarize_citing_papers
@@ -21,7 +22,8 @@ def main():
 
     print(f"Processing papers citing {args.target_bibcode}...", flush=True)
     results = summarize_citing_papers(args.target_bibcode, rows=args.rows)
-    report_path = Path.cwd() / "citation_report.html"
+    filename = f"citation_report_{quote(args.target_bibcode, safe='')}.html"
+    report_path = Path.cwd() / filename
     print("Rendering HTML report...", flush=True)
     report_path.write_text(
         render_report(results["target"], results["citing_papers"]),

@@ -6,6 +6,7 @@ from urllib.parse import quote
 
 def render_report(target_record, results):
     """Return an HTML page for workflow results."""
+    target_bibcode = escape(target_record.get("bibcode") or "", quote=True)
     target_title = escape(target_record.get("title") or "Untitled paper")
     target_url = escape(
         "https://ui.adsabs.harvard.edu/abs/" +
@@ -39,6 +40,7 @@ def render_report(target_record, results):
 
     return (
         "<!doctype html><html lang=\"en\"><head><meta charset=\"utf-8\">"
+        f'<meta name="target-bibcode" content="{target_bibcode}">'
         "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">"
         "<title>Citation report</title>"
         "<style>body{font:16px system-ui;max-width:800px;margin:2rem auto;"
@@ -49,7 +51,8 @@ def render_report(target_record, results):
         "h2{margin:.2rem 0}.bibcode,small{color:#586575}"
         "details{margin-top:1rem}li{margin:.5rem 0}</style></head><body>"
         f'<h1>Citation report: <a href="{target_url}" target="_blank" '
-        f'rel="noopener">{target_title}</a></h1>' +
+        f'rel="noopener">{target_title}</a></h1>'
+        f'<p class="bibcode">Target bibcode: {target_bibcode}</p>' +
         "".join(cards) +
         "</body></html>"
     )
