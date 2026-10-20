@@ -67,6 +67,88 @@ def test_find_citation_passages_matches_unique_author_year_reference():
     ]
 
 
+def test_find_citation_passages_matches_title_when_reference_year_differs():
+    html = """
+    <article>
+      <p>We follow the bar-strength analysis
+        <a href="#bib.bib1">(Davis et al. 2025)</a>.</p>
+      <ol>
+        <li id="bib.bib1">Davis H. et al., H I terminal velocity curves -
+          Lessons learned from N-body/hydrodynamic ’surrogate’ models of the
+          Milky Way, 2025, MNRAS</li>
+      </ol>
+    </article>
+    """
+    target = {
+        "bibcode": "2026MNRAS.547f2166D",
+        "title": [
+            "H I terminal velocity curves − lessons learned from "
+            "N-body/hydrodynamic ‘surrogate’ models of the Milky Way"
+        ],
+        "author": ["Davis, H."],
+        "year": "2026",
+        "doi": [],
+    }
+
+    assert find_citation_passages(html, target) == [
+        "We follow the bar-strength analysis (Davis et al. 2025)."
+    ]
+
+
+def test_find_citation_passages_matches_doi_in_reference_link():
+    html = """
+    <article>
+      <p>We follow the bar-strength analysis
+        <a href="#bib.bib1">(Davis et al. 2025)</a>.</p>
+      <ol>
+        <li id="bib.bib1">Davis H. et al., H I terminal velocity curves,
+          2025, MNRAS. <a href="https://dx.doi.org/10.1093/mnras/staf2166">
+          Document</a></li>
+      </ol>
+    </article>
+    """
+    target = {
+        "bibcode": "2026MNRAS.547f2166D",
+        "title": ["A different title"],
+        "author": ["Davis, H."],
+        "year": "2026",
+        "doi": ["10.1093/mnras/staf2166"],
+    }
+
+    assert find_citation_passages(html, target) == [
+        "We follow the bar-strength analysis (Davis et al. 2025)."
+    ]
+
+
+def test_find_citation_passages_matches_entry_inside_outer_bibliography():
+    html = """
+    <article>
+      <p>Target use <a href="#bib.bib1">Davis et al. (2025)</a>.</p>
+      <p>Unrelated use <a href="#bib.bib2">Other et al. (2025)</a>.</p>
+      <ol id="bib.L1">
+        <li id="bib.bib1">Davis H. et al., 2025, preprint (arXiv)
+          <a href="https://dx.doi.org/10.48550/arXiv.2510.10845">Document</a>
+        </li>
+        <li id="bib.bib2">Other authors, 2025, MNRAS</li>
+      </ol>
+    </article>
+    """
+    target = {
+        "bibcode": "2026MNRAS.547f2166D",
+        "title": ["H I terminal velocity curves"],
+        "author": ["Davis, H."],
+        "year": "2026",
+        "doi": [
+            "10.1093/mnras/staf2166",
+            "10.48550/arXiv.2510.10845",
+        ],
+    }
+
+    assert find_citation_passages(html, target) == [
+        "Target use Davis et al. (2025)."
+    ]
+
+
 def test_find_citation_passages_ignores_ambiguous_author_year_references():
     html = """
     <article>

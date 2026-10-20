@@ -3,6 +3,7 @@
 import json
 import os
 from html.parser import HTMLParser
+from unicodedata import category
 from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
 
@@ -15,15 +16,19 @@ class _CitationParser(HTMLParser):
         self.reference_id = None
         self.reference_tag = None
         self.reference_text = []
+        self.reference_links = []
         self.paragraph = None
 
     def handle_starttag(self, tag, attrs):
         attrs = dict(attrs)
         element_id = attrs.get("id", "")
-        if self.reference_id is None and element_id.startswith("bib."):
+        if self.reference_id is not None and tag == "a":
+            self.reference_links.append(attrs.get("href", ""))
+        elif self.reference_id is None and element_id.startswith("bib.bib"):
             self.reference_id = element_id
             self.reference_tag = tag
             self.reference_text = []
+            self.reference_links = []
         elif self.reference_id is None and tag == "p" and self.paragraph is None:
             self.paragraph = {"text": [], "references": []}
         elif self.paragraph is not None and tag == "a":
@@ -39,9 +44,10 @@ class _CitationParser(HTMLParser):
 
     def handle_endtag(self, tag):
         if self.reference_id is not None and tag == self.reference_tag:
-            self.references[self.reference_id] = " ".join(
-                "".join(self.reference_text).split()
-            )
+            self.references[self.reference_id] = {
+                "text": " ".join("".join(self.reference_text).split()),
+                "links": self.reference_links,
+            }
             self.reference_id = None
             self.reference_tag = None
         elif tag == "p" and self.paragraph is not None:
@@ -59,24 +65,35 @@ def find_citation_passages(html, target_record):
     identifiers = [value.casefold() for value in identifiers if value]
     titles = target_record.get("title") or []
     title = titles[0] if isinstance(titles, list) else titles
+    title = _normalise_title(title) if title else ""
     year = str(target_record.get("year") or "")
 
     target_references = {
         reference_id
-        for reference_id, reference_text in parser.references.items()
-        if any(value in reference_text.casefold() for value in identifiers)
-        or (title and year and title.casefold() in reference_text.casefold()
-            and year in reference_text)
+        for reference_id, reference in parser.references.items()
+        if any(
+            value in reference["text"].casefold()
+            or any(value in link.casefold() for link in reference["links"])
+            for value in identifiers
+        )
     }
+    if not target_references and title:
+        title_references = {
+            reference_id
+            for reference_id, reference in parser.references.items()
+            if title in _normalise_title(reference["text"])
+        }
+        if len(title_references) == 1:
+            target_references = title_references
     if not target_references and year:
         authors = target_record.get("author") or []
         if authors:
             first_author = authors[0].split(",", 1)[0].strip().casefold()
             author_year_references = {
                 reference_id
-                for reference_id, reference_text in parser.references.items()
-                if first_author in reference_text.casefold()
-                and year in reference_text
+                for reference_id, reference in parser.references.items()
+                if first_author in reference["text"].casefold()
+                and year in reference["text"]
             }
             if len(author_year_references) == 1:
                 target_references = author_year_references
@@ -86,6 +103,16 @@ def find_citation_passages(html, target_record):
         for paragraph in parser.paragraphs
         if any(ref in target_references for ref in paragraph["references"])
     ]
+
+
+def _normalise_title(title):
+    return " ".join(
+        "".join(
+            " " if category(character).startswith("P") or character == "−"
+            else character
+            for character in title.casefold()
+        ).split()
+    )
 
 
 def get_citation_passages(target_record, citing_paper, token=None):
