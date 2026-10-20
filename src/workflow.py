@@ -11,6 +11,7 @@ def summarize_citing_papers(target_bibcode, token=None, rows=10, api_key=None):
     target = get_paper(target_bibcode, token)
     if target is None:
         raise LookupError(f"ADS did not find {target_bibcode}")
+    target_record = normalise_record(target)
 
     citing_papers = get_citing_papers(target_bibcode, token, rows)
     results = []
@@ -25,9 +26,11 @@ def summarize_citing_papers(target_bibcode, token=None, rows=10, api_key=None):
         results.append({
             "record": record,
             "passages": passages,
-            "summary": summarize_paper(record, passages, api_key),
+            "summary": summarize_paper(
+                target_record, record, passages, api_key
+            ),
         })
     return {
-        "target": normalise_record(target),
+        "target": target_record,
         "citing_papers": results,
     }

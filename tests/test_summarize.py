@@ -22,6 +22,12 @@ def test_summarize_paper_sends_record_and_passages(monkeypatch):
     monkeypatch.setattr(summarize, "urlopen", open_url)
 
     summary = summarize.summarize_paper(
+        {
+            "bibcode": "2026MNRAS.547f2166D",
+            "title": "Target paper",
+            "author": ["Davies, J."],
+            "year": "2026",
+        },
         {"title": "Citing paper", "year": "2024"},
         ["The target provides the baseline.", "We extend its method."],
         api_key="test-key",
@@ -33,6 +39,9 @@ def test_summarize_paper_sends_record_and_passages(monkeypatch):
     assert request.full_url == "https://api.openai.com/v1/responses"
     assert request.get_header("Authorization") == "Bearer test-key"
     assert payload["model"] == "gpt-6-astra"
+    assert "Target paper" in payload["input"]
+    assert "Davies, J." in payload["input"]
+    assert "2026MNRAS.547f2166D" in payload["input"]
     assert "Citing paper (2024)" in payload["input"]
     assert "The target provides the baseline." in payload["input"]
     assert "We extend its method." in payload["input"]

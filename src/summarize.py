@@ -6,14 +6,22 @@ from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
 
 
-def summarize_paper(record, passages, api_key=None):
+def summarize_paper(target, record, passages, api_key=None):
     """Return a concise summary of the target paper's use in citation passages."""
     api_key = api_key or os.environ.get("OPENAI_API_KEY")
     if not api_key:
         raise ValueError("Set OPENAI_API_KEY or pass an API key.")
 
+    target_authors = target.get("author") or []
+    target_author = target_authors[0] if target_authors else "Unknown author"
+    target_paper = (
+        f"{target.get('title') or 'Unknown title'} by {target_author} "
+        f"({target.get('year') or 'year unknown'}; "
+        f"bibcode {target.get('bibcode') or 'unknown'})"
+    )
     paper = f"{record.get('title') or 'Unknown title'} ({record.get('year') or 'year unknown'})"
     input_text = (
+        f"Target paper: {target_paper}\n"
         f"Citing paper: {paper}\n"
         "Citation passages:\n"
         + "\n".join(f"- {passage}" for passage in passages)
@@ -23,9 +31,10 @@ def summarize_paper(record, passages, api_key=None):
         data=json.dumps({
             "model": "gpt-6-astra",
             "instructions": (
-                "Summarize in one or two concise sentences how the target paper "
-                "is used in the citation passages. Use only evidence in the "
-                "passages; say if they do not provide enough context."
+                "Summarize in one or two concise sentences how the identified "
+                "target paper is used in the citation passages. Use only "
+                "evidence in the passages; say if they do not provide enough "
+                "context to determine the target paper's specific use."
             ),
             "input": input_text,
         }).encode("utf-8"),
