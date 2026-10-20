@@ -22,9 +22,10 @@ Run the pipeline from the project root with a target ADS bibcode:
 python3.12 -m src.cli "1998AJ....116.1009R"
 ```
 
-The command prints JSON containing each citing paper's normalized record,
-extracted citation passages, and summary. Use `--rows` to change the maximum
-number of citing papers retrieved (default: 10).
+The command saves `citation_report.html` in the current directory and prints
+its path. Open that file in a web browser to view each citing paper's
+normalized record, extracted passages, and summary. Use `--rows` to change the
+maximum number of citing papers retrieved (default: 10).
 
 From the project root, retrieve normalized records for a bibcode:
 
