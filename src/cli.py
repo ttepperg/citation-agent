@@ -23,7 +23,10 @@ def main():
     results = summarize_citing_papers(args.target_bibcode, rows=args.rows)
     report_path = Path.cwd() / "citation_report.html"
     print("Rendering HTML report...", flush=True)
-    report_path.write_text(render_report(results), encoding="utf-8")
+    report_path.write_text(
+        render_report(results["target"], results["citing_papers"]),
+        encoding="utf-8",
+    )
     print(f"Saved HTML report to {report_path}")
     print("Open this file in a web browser to view it.")
 

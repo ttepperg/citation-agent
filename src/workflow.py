@@ -7,13 +7,19 @@ from src.summarize import summarize_paper
 
 
 def summarize_citing_papers(target_bibcode, token=None, rows=10, api_key=None):
-    """Return each citing paper's normalized record, passages, and summary."""
+    """Return the normalized target and its citing-paper results."""
     target = get_paper(target_bibcode, token)
     if target is None:
         raise LookupError(f"ADS did not find {target_bibcode}")
 
+    citing_papers = get_citing_papers(target_bibcode, token, rows)
     results = []
-    for paper in get_citing_papers(target_bibcode, token, rows):
+    for index, paper in enumerate(citing_papers, 1):
+        print(
+            f"Processing citing paper {index}/{len(citing_papers)}: "
+            f"{paper['bibcode']}",
+            flush=True,
+        )
         record = normalise_record(paper)
         passages = get_citation_passages(target, paper, token)
         results.append({
@@ -21,4 +27,7 @@ def summarize_citing_papers(target_bibcode, token=None, rows=10, api_key=None):
             "passages": passages,
             "summary": summarize_paper(record, passages, api_key),
         })
-    return results
+    return {
+        "target": normalise_record(target),
+        "citing_papers": results,
+    }
