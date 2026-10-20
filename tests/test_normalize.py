@@ -1,10 +1,10 @@
 """Test normalization of ADS records.
 
 Run from the project root with:
-    python3.12 -m pytest tests/test_normalise.py
+    python3.12 -m pytest tests/test_normalize.py
 """
 
-from src.normalise import normalise_record
+from src.normalize import normalise_record
 
 
 def test_normalise_record_maps_ads_fields():

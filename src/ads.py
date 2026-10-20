@@ -6,7 +6,7 @@ from urllib.error import HTTPError, URLError
 from urllib.parse import urlencode
 from urllib.request import Request, urlopen
 
-from src.normalise import normalise_record
+from src.normalize import normalise_record
 
 
 def _get_ads_data(request, action):

@@ -1,7 +1,7 @@
 """Process citing papers into normalized records, passages, and summaries."""
 
 from src.ads import get_paper, get_citing_papers
-from src.normalise import normalise_record
+from src.normalize import normalise_record
 from src.passages import get_citation_passages
 from src.summarize import summarize_paper
 

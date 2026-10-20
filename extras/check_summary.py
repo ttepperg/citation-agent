@@ -8,7 +8,7 @@ import sys
 
 from extras.check_passages import check_known_citation
 from src.ads import get_paper
-from src.normalise import normalise_record
+from src.normalize import normalise_record
 from src.summarize import summarize_paper
 
 
