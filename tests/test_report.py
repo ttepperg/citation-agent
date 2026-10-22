@@ -9,7 +9,12 @@ from src.report import render_report
 
 def test_render_report_displays_and_escapes_citation_results():
     html = render_report(
-        {"title": "Target <paper>", "bibcode": "1998AJ....116.1009R"},
+        {
+            "title": "Target <paper>",
+            "bibcode": "1998AJ....116.1009R",
+            "author": ["Target, A.", "Second, B.", "Third, C."],
+            "year": "1998",
+        },
         [{
             "record": {
                 "title": "Paper <one>",
@@ -31,7 +36,7 @@ def test_render_report_displays_and_escapes_citation_results():
     assert (
         'Citation report: <a href="https://ui.adsabs.harvard.edu/abs/'
         '1998AJ....116.1009R" target="_blank" rel="noopener">'
-        'Target &lt;paper&gt;</a>'
+        'Target &lt;paper&gt;</a> — Target et al. (1998)'
     ) in html
     assert 'href="https://ui.adsabs.harvard.edu/abs/1998AJ....116.1009R"' in html
     assert "Paper &lt;one&gt;" in html

@@ -4,11 +4,14 @@ from datetime import datetime, timezone
 from html import escape
 from urllib.parse import quote
 
+from src.normalize import format_citation_label
+
 
 def render_report(target_record, results):
     """Return an HTML page for workflow results."""
     target_bibcode = escape(target_record.get("bibcode") or "", quote=True)
     target_title = escape(target_record.get("title") or "Untitled paper")
+    target_citation = escape(format_citation_label(target_record))
     target_url = escape(
         "https://ui.adsabs.harvard.edu/abs/" +
         quote(target_record.get("bibcode") or "", safe=""),
@@ -73,7 +76,7 @@ def render_report(target_record, results):
         "small.metadata{display:block;margin-top:.5rem;font-size:.8rem}"
         "details{margin-top:1rem}li{margin:.5rem 0}</style></head><body>"
         f'<h1>Citation report: <a href="{target_url}" target="_blank" '
-        f'rel="noopener">{target_title}</a></h1>'
+        f'rel="noopener">{target_title}</a> — {target_citation}</h1>'
         f'<p class="bibcode">Target bibcode: {target_bibcode}</p>' +
         "".join(cards) +
         "</body></html>"

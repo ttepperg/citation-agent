@@ -5,6 +5,8 @@ import os
 from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
 
+from src.normalize import format_citation_label
+
 
 MODEL = "gpt-6-astra"
 TEMPERATURE = 1
@@ -19,20 +21,7 @@ def summarize_paper(target, record, passages, api_key=None):
 
     target_authors = target.get("author") or []
     target_author = target_authors[0] if target_authors else "Unknown author"
-    author_surnames = [
-        author.split(",", 1)[0].strip() for author in target_authors
-    ]
-    if len(author_surnames) > 2:
-        citation_authors = f"{author_surnames[0]} et al."
-    elif len(author_surnames) == 2:
-        citation_authors = f"{author_surnames[0]} & {author_surnames[1]}"
-    else:
-        citation_authors = (
-            author_surnames[0] if author_surnames else "Unknown author"
-        )
-    target_citation = (
-        f"{citation_authors} ({target.get('year') or 'year unknown'})"
-    )
+    target_citation = format_citation_label(target)
     target_paper = (
         f"{target.get('title') or 'Unknown title'} by {target_author} "
         f"({target.get('year') or 'year unknown'}; "

@@ -14,3 +14,18 @@ def normalise_record(record):
         "year": record.get("year"),
         "doi": record.get("doi") or [],
     }
+
+
+def format_citation_label(record):
+    """Return a consistent author–year label for a paper record."""
+    authors = [
+        author.split(",", 1)[0].strip()
+        for author in record.get("author") or []
+    ]
+    if len(authors) > 2:
+        citation_authors = f"{authors[0]} et al."
+    elif len(authors) == 2:
+        citation_authors = f"{authors[0]} & {authors[1]}"
+    else:
+        citation_authors = authors[0] if authors else "Unknown author"
+    return f"{citation_authors} ({record.get('year') or 'year unknown'})"
