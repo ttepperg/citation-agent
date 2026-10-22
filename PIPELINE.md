@@ -2,13 +2,26 @@
 
 The CLI turns a target ADS bibcode into an HTML report about papers that cite it.
 
-```text
-target bibcode
-    → ADS target and citing records
-    → normalized records
-    → citation passages for each citing paper
-    → summary for each citing paper
-    → target-specific HTML report
+```mermaid
+flowchart LR
+    User[Target bibcode] --> CLI[src/cli.py]
+    CLI --> Workflow[src/workflow.py]
+    Workflow --> ADS[ADS API]
+    ADS --> Normalize[src/normalize.py]
+    Normalize --> Workflow
+    Workflow --> Passages[src/passages.py]
+    Passages --> Resolver[ADS link resolver]
+    Resolver --> Arxiv[arXiv HTML]
+    Arxiv --> Passages
+    Passages --> Workflow
+    Workflow --> Summarize[src/summarize.py]
+    Summarize --> OpenAI[OpenAI Responses API]
+    OpenAI --> Summarize
+    Summarize --> Workflow
+    Workflow --> CLI
+    CLI --> Report[src/report.py]
+    Report --> HTML[HTML report]
+    Report ~~~ CLI
 ```
 
 ## Main steps
