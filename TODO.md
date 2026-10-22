@@ -6,8 +6,7 @@
 2. [ ] Discuss project guardrails and related boundaries.
 3. [ ] Add an architecture sketch of the citation agent to `README.md` or `PIPELINE.md`.
 4. [ ] Discuss whether users should be able to run the pipeline through a browser UI.
-5. [ ] Add acknowledgement to `README.md`: "Built with Aeon".
-6. [ ] Create a `citation_reports` folder for generated HTML reports.
+5. [ ] Create a `citation_reports` folder for generated HTML reports.
 
 ## Completed
 
@@ -15,3 +14,4 @@
 - [x] Open ADS paper links in a new tab (`target="_blank"`) and add `rel="noopener"`.
 - [x] Investigate missing citing papers for `2024MNRAS.535..187T`; use it as a test case.
 - [x] Discuss summary variability and record compact generation metadata for provenance.
+- [x] Add an acknowledgement to `README.md` for Aeon.

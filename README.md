@@ -61,3 +61,7 @@ python3.12 -m extras.check_summary "2016A&A...594A...13P" "2020A&A...641A...6P"
 ```
 
 The main `src.cli` pipeline does not require either of these one-paper scripts.
+
+## Acknowledgement
+
+Built with Aeon ℵ 
