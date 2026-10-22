@@ -8,7 +8,7 @@ from urllib.request import Request, urlopen
 
 MODEL = "gpt-6-astra"
 TEMPERATURE = 1
-PROMPT_VERSION = "citation-summary-v1"
+PROMPT_VERSION = "citation-summary-v2"
 
 
 def summarize_paper(target, record, passages, api_key=None):
@@ -19,6 +19,20 @@ def summarize_paper(target, record, passages, api_key=None):
 
     target_authors = target.get("author") or []
     target_author = target_authors[0] if target_authors else "Unknown author"
+    author_surnames = [
+        author.split(",", 1)[0].strip() for author in target_authors
+    ]
+    if len(author_surnames) > 2:
+        citation_authors = f"{author_surnames[0]} et al."
+    elif len(author_surnames) == 2:
+        citation_authors = f"{author_surnames[0]} & {author_surnames[1]}"
+    else:
+        citation_authors = (
+            author_surnames[0] if author_surnames else "Unknown author"
+        )
+    target_citation = (
+        f"{citation_authors} ({target.get('year') or 'year unknown'})"
+    )
     target_paper = (
         f"{target.get('title') or 'Unknown title'} by {target_author} "
         f"({target.get('year') or 'year unknown'}; "
@@ -27,6 +41,7 @@ def summarize_paper(target, record, passages, api_key=None):
     paper = f"{record.get('title') or 'Unknown title'} ({record.get('year') or 'year unknown'})"
     input_text = (
         f"Target paper: {target_paper}\n"
+        f"Target citation label: {target_citation}\n"
         f"Citing paper: {paper}\n"
         "Citation passages:\n"
         + "\n".join(f"- {passage}" for passage in passages)
@@ -36,9 +51,12 @@ def summarize_paper(target, record, passages, api_key=None):
         "temperature": TEMPERATURE,
         "instructions": (
             "Summarize in one or two concise sentences how the identified "
-            "target paper is used in the citation passages. Use only "
-            "evidence in the passages; say if they do not provide enough "
-            "context to determine the target paper's specific use."
+            f"target paper is used in the citation passages. When naming it, "
+            f'use exactly this citation label: {target_citation}. Do not use '
+            "another author/year form or call it 'the target paper'; pronouns "
+            "are fine after the first mention. Use only evidence in the "
+            "passages; say if they do not provide enough context to determine "
+            "the paper's specific use."
         ),
         "input": input_text,
     }

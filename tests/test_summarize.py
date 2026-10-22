@@ -8,10 +8,28 @@ import io
 import json
 from unittest.mock import MagicMock
 
+import pytest
+
 from src import summarize
 
 
-def test_summarize_paper_sends_record_and_passages(monkeypatch):
+@pytest.mark.parametrize(
+    ("authors", "citation_label"),
+    [
+        (["Davies, J."], "Davies (2026)"),
+        (
+            ["Davies, H.", "Tepper-Garcia, T."],
+            "Davies & Tepper-Garcia (2026)",
+        ),
+        (
+            ["Davies, H.", "Tepper-Garcia, T.", "McClure-Griffiths, N."],
+            "Davies et al. (2026)",
+        ),
+    ],
+)
+def test_summarize_paper_sends_record_and_passages(
+    monkeypatch, authors, citation_label
+):
     result = {
         "id": "resp_test123",
         "model": "gpt-6-astra-2026-08-15",
@@ -28,7 +46,7 @@ def test_summarize_paper_sends_record_and_passages(monkeypatch):
         {
             "bibcode": "2026MNRAS.547f2166D",
             "title": "Target paper",
-            "author": ["Davies, J."],
+            "author": authors,
             "year": "2026",
         },
         {"title": "Citing paper", "year": "2024"},
@@ -41,7 +59,7 @@ def test_summarize_paper_sends_record_and_passages(monkeypatch):
         "metadata": {
             "model": "gpt-6-astra-2026-08-15",
             "temperature": 1,
-            "prompt_version": "citation-summary-v1",
+            "prompt_version": "citation-summary-v2",
             "response_id": "resp_test123",
             "created_at": 1790000000,
         },
@@ -53,7 +71,12 @@ def test_summarize_paper_sends_record_and_passages(monkeypatch):
     assert payload["model"] == "gpt-6-astra"
     assert payload["temperature"] == 1
     assert "Target paper" in payload["input"]
-    assert "Davies, J." in payload["input"]
+    assert authors[0] in payload["input"]
+    assert f"Target citation label: {citation_label}" in payload["input"]
+    assert (
+        f"use exactly this citation label: {citation_label}"
+        in payload["instructions"]
+    )
     assert "2026MNRAS.547f2166D" in payload["input"]
     assert "Citing paper (2024)" in payload["input"]
     assert "The target provides the baseline." in payload["input"]

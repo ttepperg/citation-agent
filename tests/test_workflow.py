@@ -18,7 +18,7 @@ def test_summarize_citing_papers_keeps_summary_metadata(monkeypatch):
     metadata = {
         "model": "gpt-6-astra-2026-08-15",
         "temperature": 1,
-        "prompt_version": "citation-summary-v1",
+        "prompt_version": "citation-summary-v2",
         "response_id": "resp_test123",
         "created_at": 1790000000,
     }

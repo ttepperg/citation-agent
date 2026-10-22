@@ -21,7 +21,7 @@ def test_render_report_displays_and_escapes_citation_results():
             "summary_metadata": {
                 "model": "gpt-6-astra <snapshot>",
                 "temperature": 1,
-                "prompt_version": "citation-summary-v1 <test>",
+                "prompt_version": "citation-summary-v2 <test>",
                 "response_id": "resp_<id>",
                 "created_at": 0,
             },
@@ -43,6 +43,6 @@ def test_render_report_displays_and_escapes_citation_results():
     assert "<details><summary>Citation passages</summary>" in html
     assert "Generated with gpt-6-astra &lt;snapshot&gt;" in html
     assert "temperature 1" in html
-    assert "prompt citation-summary-v1 &lt;test&gt;" in html
+    assert "prompt citation-summary-v2 &lt;test&gt;" in html
     assert "response resp_&lt;id&gt;" in html
     assert "1970-01-01 00:00 UTC" in html
