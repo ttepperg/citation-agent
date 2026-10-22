@@ -1,5 +1,6 @@
 """Render citation summaries as a self-contained HTML report."""
 
+from datetime import datetime, timezone
 from html import escape
 from urllib.parse import quote
 
@@ -25,6 +26,25 @@ def render_report(target_record, results):
         )
         year = escape(str(record.get("year") or "Year unknown"))
         summary = escape(result.get("summary") or "No summary available.")
+        metadata = result.get("summary_metadata") or {}
+        metadata_note = ""
+        if metadata:
+            created_at = metadata.get("created_at")
+            created_at = (
+                datetime.fromtimestamp(created_at, timezone.utc).strftime(
+                    "%Y-%m-%d %H:%M UTC"
+                )
+                if created_at is not None else "unknown time"
+            )
+            metadata_note = (
+                '<details class="metadata"><summary>Generation details</summary>'
+                '<small class="metadata">Generated with '
+                f'{escape(str(metadata.get("model") or "unknown model"))}; '
+                f'temperature {escape(str(metadata.get("temperature", "unknown")))}; '
+                f'prompt {escape(str(metadata.get("prompt_version") or "unknown"))}; '
+                f'response {escape(str(metadata.get("response_id") or "unknown"))}; '
+                f'{escape(created_at)}</small></details>'
+            )
         passages = "".join(
             f"<li>{escape(passage)}</li>" for passage in result["passages"]
         ) or "<li>No citation passages found.</li>"
@@ -35,7 +55,8 @@ def render_report(target_record, results):
             f"<p class=\"bibcode\">{bibcode}</p>"
             f"<p>{summary}</p>"
             f"<details><summary>Citation passages</summary><ul>{passages}</ul>"
-            "</details></article>"
+            "</details>"
+            f"{metadata_note}</article>"
         )
 
     return (
@@ -49,6 +70,7 @@ def render_report(target_record, results):
         "border-radius:10px;box-shadow:0 2px 10px #1b2a3a18}"
         "a{color:#1769aa;text-decoration:none}a:hover{text-decoration:underline}"
         "h2{margin:.2rem 0}.bibcode,small{color:#586575}"
+        "small.metadata{display:block;margin-top:.5rem;font-size:.8rem}"
         "details{margin-top:1rem}li{margin:.5rem 0}</style></head><body>"
         f'<h1>Citation report: <a href="{target_url}" target="_blank" '
         f'rel="noopener">{target_title}</a></h1>'

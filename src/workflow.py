@@ -23,12 +23,14 @@ def summarize_citing_papers(target_bibcode, token=None, rows=10, api_key=None):
         )
         record = normalise_record(paper)
         passages = get_citation_passages(target, paper, token)
+        summary_result = summarize_paper(
+            target_record, record, passages, api_key
+        )
         results.append({
             "record": record,
             "passages": passages,
-            "summary": summarize_paper(
-                target_record, record, passages, api_key
-            ),
+            "summary": summary_result["summary"],
+            "summary_metadata": summary_result["metadata"],
         })
     return {
         "target": target_record,

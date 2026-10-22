@@ -6,8 +6,13 @@ from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
 
 
+MODEL = "gpt-6-astra"
+TEMPERATURE = 1
+PROMPT_VERSION = "citation-summary-v1"
+
+
 def summarize_paper(target, record, passages, api_key=None):
-    """Return a concise summary of the target paper's use in citation passages."""
+    """Return a summary and compact metadata for the model response."""
     api_key = api_key or os.environ.get("OPENAI_API_KEY")
     if not api_key:
         raise ValueError("Set OPENAI_API_KEY or pass an API key.")
@@ -26,18 +31,20 @@ def summarize_paper(target, record, passages, api_key=None):
         "Citation passages:\n"
         + "\n".join(f"- {passage}" for passage in passages)
     )
+    request_data = {
+        "model": MODEL,
+        "temperature": TEMPERATURE,
+        "instructions": (
+            "Summarize in one or two concise sentences how the identified "
+            "target paper is used in the citation passages. Use only "
+            "evidence in the passages; say if they do not provide enough "
+            "context to determine the target paper's specific use."
+        ),
+        "input": input_text,
+    }
     request = Request(
         "https://api.openai.com/v1/responses",
-        data=json.dumps({
-            "model": "gpt-6-astra",
-            "instructions": (
-                "Summarize in one or two concise sentences how the identified "
-                "target paper is used in the citation passages. Use only "
-                "evidence in the passages; say if they do not provide enough "
-                "context to determine the target paper's specific use."
-            ),
-            "input": input_text,
-        }).encode("utf-8"),
+        data=json.dumps(request_data).encode("utf-8"),
         headers={
             "Authorization": f"Bearer {api_key}",
             "Content-Type": "application/json",
@@ -58,8 +65,18 @@ def summarize_paper(target, record, passages, api_key=None):
             raise TimeoutError("Timed out contacting the OpenAI API.") from exc
         raise RuntimeError(f"Network error contacting the OpenAI API: {reason}") from exc
 
-    return "".join(
+    summary = "".join(
         part["text"]
         for item in result["output"] if item.get("type") == "message"
         for part in item["content"] if part.get("type") == "output_text"
     ).strip()
+    return {
+        "summary": summary,
+        "metadata": {
+            "model": result.get("model", MODEL),
+            "temperature": TEMPERATURE,
+            "prompt_version": PROMPT_VERSION,
+            "response_id": result.get("id"),
+            "created_at": result.get("created_at"),
+        },
+    }
