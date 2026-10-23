@@ -14,6 +14,7 @@ def summarize_citing_papers(target_bibcode, token=None, rows=10, api_key=None):
     target_record = normalise_record(target)
 
     citing_papers = get_citing_papers(target_bibcode, token, rows)
+    print(f"Number of citing papers found: {len(citing_papers)}", flush=True)
     results = []
     for index, paper in enumerate(citing_papers, 1):
         print(
