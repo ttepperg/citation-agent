@@ -22,9 +22,10 @@ Run the pipeline from the project root with a target ADS bibcode:
 python3.12 -m src.cli "1998AJ....116.1009R"
 ```
 
-The command saves a report named
-`citation_report_<encoded-bibcode>.html` in the current directory and prints
-its path. Each target bibcode gets a distinct report filename. The report
+The command saves a report to
+`citation_reports/citation_report_<encoded-bibcode>.html` in the current
+working directory, creating `citation_reports/` if needed, and prints its path.
+Each target bibcode gets a distinct report filename. The report
 displays the target bibcode for reuse and shows each citing paper's normalized
 record, extracted passages, and summary. Open the report in a web browser to
 view it. Use `--rows` to change the maximum number of citing papers retrieved
