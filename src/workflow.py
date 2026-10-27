@@ -14,8 +14,14 @@ def summarize_citing_papers(target_bibcode, token=None, rows=10, api_key=None):
     target_record = normalise_record(target)
     target_summary = summarize_target_paper(target_record, api_key)
 
-    citing_papers = get_citing_papers(target_bibcode, token, rows)
-    print(f"Number of citing papers found: {len(citing_papers)}", flush=True)
+    citing_papers, total_citing_papers = get_citing_papers(
+        target_bibcode, token, rows
+    )
+    print(
+        f"ADS found {total_citing_papers} citing papers; "
+        f"processing {len(citing_papers)} (limit: {rows}).",
+        flush=True,
+    )
     results = []
     for index, paper in enumerate(citing_papers, 1):
         print(

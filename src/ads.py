@@ -52,7 +52,7 @@ def get_paper(bibcode, token=None):
 
 
 def get_citing_papers(bibcode, token=None, rows=10):
-    """Return raw ADS records citing bibcode; set ADS_API_TOKEN or pass token."""
+    """Return citing records and total hits; set ADS_API_TOKEN or pass token."""
     token = token or os.environ.get("ADS_API_TOKEN")
     if not token:
         raise ValueError("Set ADS_API_TOKEN or pass an ADS API token.")
@@ -67,14 +67,16 @@ def get_citing_papers(bibcode, token=None, rows=10):
         headers={"Authorization": f"Bearer {token}"},
     )
     data = _get_ads_data(request, f"fetching papers citing {bibcode}")
-    return data["response"]["docs"]
+    response = data["response"]
+    return response["docs"], response["numFound"]
 
 
 def get_citing_papers_normalised(bibcode, token=None, rows=10):
     """Return normalized records for papers citing bibcode."""
+    records, _ = get_citing_papers(bibcode, token, rows)
     return [
         normalise_record(record)
-        for record in get_citing_papers(bibcode, token, rows)
+        for record in records
     ]
 
 

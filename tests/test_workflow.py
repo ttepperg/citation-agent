@@ -7,7 +7,9 @@ Run from the project root with:
 from src import workflow
 
 
-def test_summarize_citing_papers_keeps_summary_metadata(monkeypatch):
+def test_summarize_citing_papers_reports_total_and_keeps_summary_metadata(
+    monkeypatch, capsys
+):
     target = {
         "bibcode": "TARGET",
         "title": "Target paper",
@@ -25,7 +27,7 @@ def test_summarize_citing_papers_keeps_summary_metadata(monkeypatch):
     monkeypatch.setattr(workflow, "get_paper", lambda bibcode, token: target)
     monkeypatch.setattr(
         workflow, "get_citing_papers",
-        lambda bibcode, token, rows: [citing],
+        lambda bibcode, token, rows: ([citing], 17),
     )
     monkeypatch.setattr(workflow, "normalise_record", lambda record: record)
     monkeypatch.setattr(
@@ -50,3 +52,7 @@ def test_summarize_citing_papers_keeps_summary_metadata(monkeypatch):
         "summary": "It provides a baseline.",
         "summary_metadata": metadata,
     }]
+    assert (
+        "ADS found 17 citing papers; processing 1 (limit: 1)."
+        in capsys.readouterr().out
+    )

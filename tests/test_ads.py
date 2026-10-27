@@ -14,7 +14,7 @@ def test_get_citing_papers_normalised(monkeypatch):
     monkeypatch.setattr(
         ads,
         "get_citing_papers",
-        lambda bibcode, token=None, rows=10: [
+        lambda bibcode, token=None, rows=10: ([
             {
                 "bibcode": "2020A&A...641A...6P",
                 "title": ["Planck 2018 results"],
@@ -23,7 +23,7 @@ def test_get_citing_papers_normalised(monkeypatch):
                 "doi": ["10.1051/0004-6361/201833910"],
                 "abstract": "We present the Planck cosmological results.",
             }
-        ],
+        ], 17),
     )
 
     assert ads.get_citing_papers_normalised("target") == [
@@ -36,6 +36,20 @@ def test_get_citing_papers_normalised(monkeypatch):
             "abstract": "We present the Planck cosmological results.",
         }
     ]
+
+
+def test_get_citing_papers_returns_records_and_total_hits(monkeypatch):
+    record = {"bibcode": "CITING", "title": ["Citing paper"]}
+    response = {"response": {"docs": [record], "numFound": 17}}
+    monkeypatch.setattr(
+        ads,
+        "urlopen",
+        lambda request, timeout: BytesIO(json.dumps(response).encode()),
+    )
+
+    assert ads.get_citing_papers("TARGET", token="test", rows=1) == (
+        [record], 17
+    )
 
 
 def test_get_paper_returns_matching_record(monkeypatch):
