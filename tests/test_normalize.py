@@ -14,6 +14,7 @@ def test_normalise_record_maps_ads_fields():
         "author": ["Planck Collaboration"],
         "year": "2020",
         "doi": ["10.1051/0004-6361/201833910"],
+        "abstract": "We present the Planck cosmological results.",
     }
 
     assert normalise_record(record) == {
@@ -22,6 +23,7 @@ def test_normalise_record_maps_ads_fields():
         "author": ["Planck Collaboration"],
         "year": "2020",
         "doi": ["10.1051/0004-6361/201833910"],
+        "abstract": "We present the Planck cosmological results.",
     }
 
 
@@ -32,4 +34,5 @@ def test_normalise_record_defaults_missing_fields():
         "author": [],
         "year": None,
         "doi": [],
+        "abstract": None,
     }

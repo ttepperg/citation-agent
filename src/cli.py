@@ -26,7 +26,11 @@ def main():
     report_path = Path.cwd() / filename
     print("Rendering HTML report...", flush=True)
     report_path.write_text(
-        render_report(results["target"], results["citing_papers"]),
+        render_report(
+            results["target"],
+            results["citing_papers"],
+            results["target_summary"],
+        ),
         encoding="utf-8",
     )
     print(f"Saved HTML report to {report_path}")

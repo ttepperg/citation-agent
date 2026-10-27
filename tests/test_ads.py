@@ -21,6 +21,7 @@ def test_get_citing_papers_normalised(monkeypatch):
                 "author": ["Planck Collaboration"],
                 "year": "2020",
                 "doi": ["10.1051/0004-6361/201833910"],
+                "abstract": "We present the Planck cosmological results.",
             }
         ],
     )
@@ -32,6 +33,7 @@ def test_get_citing_papers_normalised(monkeypatch):
             "author": ["Planck Collaboration"],
             "year": "2020",
             "doi": ["10.1051/0004-6361/201833910"],
+            "abstract": "We present the Planck cosmological results.",
         }
     ]
 
@@ -81,6 +83,7 @@ def test_get_paper_and_citing_papers_normalised(monkeypatch):
             "author": [],
             "year": None,
             "doi": [],
+            "abstract": None,
         },
         "citing_records": [{"bibcode": "citing"}],
     }

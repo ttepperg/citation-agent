@@ -7,7 +7,29 @@ from urllib.parse import quote
 from src.normalize import format_citation_label
 
 
-def render_report(target_record, results):
+def _render_metadata(metadata):
+    if not metadata:
+        return ""
+
+    created_at = metadata.get("created_at")
+    created_at = (
+        datetime.fromtimestamp(created_at, timezone.utc).strftime(
+            "%Y-%m-%d %H:%M UTC"
+        )
+        if created_at is not None else "unknown time"
+    )
+    return (
+        '<details class="metadata"><summary>Generation details</summary>'
+        '<small class="metadata">Generated with '
+        f'{escape(str(metadata.get("model") or "unknown model"))}; '
+        f'temperature {escape(str(metadata.get("temperature", "unknown")))}; '
+        f'prompt {escape(str(metadata.get("prompt_version") or "unknown"))}; '
+        f'response {escape(str(metadata.get("response_id") or "unknown"))}; '
+        f'{escape(created_at)}</small></details>'
+    )
+
+
+def render_report(target_record, results, target_summary=None):
     """Return an HTML page for workflow results."""
     target_bibcode = escape(target_record.get("bibcode") or "", quote=True)
     target_title = escape(target_record.get("title") or "Untitled paper")
@@ -16,6 +38,15 @@ def render_report(target_record, results):
         "https://ui.adsabs.harvard.edu/abs/" +
         quote(target_record.get("bibcode") or "", safe=""),
         quote=True,
+    )
+    target_summary = target_summary or {}
+    target_summary_text = escape(
+        target_summary.get("summary") or "No summary available."
+    )
+    target_summary_html = (
+        '<article><h2>About this paper</h2>'
+        f"<p>{target_summary_text}</p>"
+        f'{_render_metadata(target_summary.get("metadata"))}</article>'
     )
     cards = []
     for result in results:
@@ -29,25 +60,7 @@ def render_report(target_record, results):
         )
         year = escape(str(record.get("year") or "Year unknown"))
         summary = escape(result.get("summary") or "No summary available.")
-        metadata = result.get("summary_metadata") or {}
-        metadata_note = ""
-        if metadata:
-            created_at = metadata.get("created_at")
-            created_at = (
-                datetime.fromtimestamp(created_at, timezone.utc).strftime(
-                    "%Y-%m-%d %H:%M UTC"
-                )
-                if created_at is not None else "unknown time"
-            )
-            metadata_note = (
-                '<details class="metadata"><summary>Generation details</summary>'
-                '<small class="metadata">Generated with '
-                f'{escape(str(metadata.get("model") or "unknown model"))}; '
-                f'temperature {escape(str(metadata.get("temperature", "unknown")))}; '
-                f'prompt {escape(str(metadata.get("prompt_version") or "unknown"))}; '
-                f'response {escape(str(metadata.get("response_id") or "unknown"))}; '
-                f'{escape(created_at)}</small></details>'
-            )
+        metadata_note = _render_metadata(result.get("summary_metadata"))
         passages = "".join(
             f"<li>{escape(passage)}</li>" for passage in result["passages"]
         ) or "<li>No citation passages found.</li>"
@@ -78,6 +91,7 @@ def render_report(target_record, results):
         f'<h1>Citation report: <a href="{target_url}" target="_blank" '
         f'rel="noopener">{target_title}</a> — {target_citation}</h1>'
         f'<p class="bibcode">Target bibcode: {target_bibcode}</p>' +
+        target_summary_html +
         "".join(cards) +
         "</body></html>"
     )
