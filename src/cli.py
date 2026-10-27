@@ -23,7 +23,9 @@ def main():
     print(f"Processing papers citing {args.target_bibcode}...", flush=True)
     results = summarize_citing_papers(args.target_bibcode, rows=args.rows)
     filename = f"citation_report_{quote(args.target_bibcode, safe='')}.html"
-    report_path = Path.cwd() / filename
+    report_directory = Path.cwd() / "citation_reports"
+    report_directory.mkdir(exist_ok=True)
+    report_path = report_directory / filename
     print("Rendering HTML report...", flush=True)
     report_path.write_text(
         render_report(
