@@ -6,6 +6,7 @@
 2. [ ] Discuss project guardrails and related boundaries.
 3. [ ] Discuss whether users should be able to run the pipeline through a browser UI.
 4. [ ] Review pipeline structure based on Mermaid diagram in PIPELINE.md; can we simplify?
+5. [ ] Dump results to a new file report_BIBCODE.json; create template dynamic page to load report
 
 ## Completed
 
