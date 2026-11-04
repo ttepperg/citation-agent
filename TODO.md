@@ -6,8 +6,7 @@
 2. [ ] Discuss project guardrails and related boundaries.
 3. [ ] Discuss whether users should be able to run the pipeline through a browser UI.
 4. [ ] Review pipeline structure based on Mermaid diagram in PIPELINE.md; can we simplify?
-5. [ ] Create a template-driven page that loads a saved JSON report.
-6. [ ] Consider replacing per-bibcode HTML reports with the JSON report and generic viewer.
+5. [ ] Consider replacing per-bibcode HTML reports with the JSON report and generic viewer.
 
 ## Completed
 
@@ -20,3 +19,4 @@
 - [x] Generate and display a summary of the target paper from its ADS abstract.
 - [x] Save generated HTML reports in a `citation_reports` folder.
 - [x] Save workflow results as per-bibcode JSON files alongside HTML reports.
+- [x] Create a template-driven JSON report viewer with file-picker and local-server loading.

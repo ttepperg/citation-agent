@@ -32,6 +32,25 @@ citing-paper records, passages, summaries, and generation metadata for use by
 other tools. Use `--rows` to change the maximum number of citing papers
 retrieved (default: 10).
 
+## View a saved JSON report
+
+Open `templates/citation_report.html` in a browser and select a JSON report
+with the file picker. To load a report by bibcode instead, start a local server
+from the project root:
+
+```sh
+python3.12 -m http.server --bind 127.0.0.1 8000
+```
+
+Then open this URL, replacing the bibcode as needed:
+
+```text
+http://127.0.0.1:8000/templates/citation_report.html?bibcode=2024MNRAS.535..187T
+```
+
+The viewer loads the matching JSON file from `citation_reports/`. In a bibcode
+containing `&`, write `%26` in the URL.
+
 For example, request up to 20 citing papers with:
 
 ```sh

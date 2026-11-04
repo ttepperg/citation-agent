@@ -27,6 +27,8 @@ flowchart LR
     CLI --> Report[src/report.py]
     Report --> HTML[HTML report]
     CLI --> JSON[JSON data]
+    JSON --> Viewer[templates/citation_report.html]
+    Viewer --> View[Rendered JSON report]
     Report ~~~ CLI
 ```
 
@@ -64,6 +66,9 @@ flowchart LR
    workflow results as JSON for use by other tools. Both files share the
    basename `citation_report_<encoded-bibcode>` and use `.html` and `.json`
    extensions; their locations are printed.
+7. **View a saved JSON report** — `templates/citation_report.html` renders a
+   selected JSON file with its file picker. When served locally, it can also
+   fetch the JSON by bibcode from `citation_reports/`.
 
 ## Run
 

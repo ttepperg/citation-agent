@@ -28,17 +28,30 @@
     details { margin-top: 1rem; }
     li { margin: .5rem 0; }
     #status { min-height: 1.5em; }
+    form { display: flex; flex-wrap: wrap; gap: .5rem; align-items: end; }
+    label { display: block; margin-bottom: .25rem; }
+    input, button { font: inherit; padding: .4rem .6rem; }
   </style>
 </head>
 <body>
   <h1>Citation report viewer</h1>
-  <p>Select a JSON report created by the citation agent.</p>
+  <p>Load a saved JSON report from a local server, or choose the file directly.</p>
+  <form id="bibcode-form">
+    <div>
+      <label for="bibcode">Load by bibcode (requires local server)</label>
+      <input id="bibcode" name="bibcode" type="text" required>
+    </div>
+    <button type="submit">Load report</button>
+  </form>
+  <p>Or select a JSON report:</p>
   <input id="report-file" type="file" accept=".json,application/json">
   <p id="status" role="status" aria-live="polite">No report selected.</p>
   <main id="report" hidden></main>
 
   <script>
     const fileInput = document.getElementById("report-file");
+    const bibcodeForm = document.getElementById("bibcode-form");
+    const bibcodeInput = document.getElementById("bibcode");
     const report = document.getElementById("report");
     const status = document.getElementById("status");
 
@@ -141,20 +154,43 @@
       report.hidden = false;
     }
 
-    fileInput.addEventListener("change", async () => {
-      const file = fileInput.files[0];
-      if (!file) return;
-
+    async function loadReport(jsonPromise, source) {
       report.hidden = true;
       report.replaceChildren();
-      status.textContent = `Loading ${file.name}...`;
+      status.textContent = `Loading ${source}...`;
       try {
-        renderReport(JSON.parse(await file.text()));
-        status.textContent = `Loaded ${file.name}.`;
+        renderReport(await jsonPromise);
+        status.textContent = `Loaded ${source}.`;
       } catch (error) {
         status.textContent = `Could not load report: ${error.message}`;
       }
+    }
+
+    function loadFromServer(bibcode) {
+      const filename = `citation_report_${encodeURIComponent(bibcode)}.json`;
+      const jsonPromise = fetch(`../citation_reports/${filename}`).then(response => {
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        return response.json();
+      });
+      loadReport(jsonPromise, `report for ${bibcode}`);
+    }
+
+    bibcodeForm.addEventListener("submit", event => {
+      event.preventDefault();
+      const bibcode = bibcodeInput.value.trim();
+      if (bibcode) loadFromServer(bibcode);
     });
+
+    fileInput.addEventListener("change", () => {
+      const file = fileInput.files[0];
+      if (file) loadReport(file.text().then(JSON.parse), file.name);
+    });
+
+    const bibcode = new URLSearchParams(window.location.search).get("bibcode");
+    if (bibcode) {
+      bibcodeInput.value = bibcode;
+      loadFromServer(bibcode);
+    }
   </script>
 </body>
 </html>
