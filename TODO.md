@@ -6,7 +6,7 @@
 2. [ ] Discuss project guardrails and related boundaries.
 3. [ ] Discuss whether users should be able to run the pipeline through a browser UI.
 4. [ ] Review pipeline structure based on Mermaid diagram in PIPELINE.md; can we simplify?
-5. [ ] Consider replacing per-bibcode HTML reports with the JSON report and generic viewer.
+5. [ ] Reconsider removing per-bibcode HTML reports: JSON plus the viewer avoids duplicate output, but standalone HTML is easy to share and open in any browser.
 
 ## Completed
 
