@@ -7,6 +7,7 @@
 3. [ ] Discuss whether users should be able to run the pipeline through a browser UI.
 4. [ ] Review pipeline structure based on Mermaid diagram in PIPELINE.md; can we simplify?
 5. [ ] Create a template-driven page that loads a saved JSON report.
+6. [ ] Consider replacing per-bibcode HTML reports with the JSON report and generic viewer.
 
 ## Completed
 
