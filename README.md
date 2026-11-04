@@ -22,14 +22,15 @@ Run the pipeline from the project root with a target ADS bibcode:
 python3.12 -m src.cli "1998AJ....116.1009R"
 ```
 
-The command saves a report to
-`citation_reports/citation_report_<encoded-bibcode>.html` in the current
-working directory, creating `citation_reports/` if needed, and prints its path.
-Each target bibcode gets a distinct report filename. The report
-displays the target bibcode for reuse and shows each citing paper's normalized
-record, extracted passages, and summary. Open the report in a web browser to
-view it. Use `--rows` to change the maximum number of citing papers retrieved
-(default: 10).
+The command saves an HTML report and its JSON data to
+`citation_reports/citation_report_<encoded-bibcode>.html` and
+`citation_reports/citation_report_<encoded-bibcode>.json` in the current
+working directory, creating `citation_reports/` if needed. It prints both
+paths. Each target bibcode gets distinct filenames. The HTML report can be
+opened in a browser; the JSON file contains the target, target summary, and
+citing-paper records, passages, summaries, and generation metadata for use by
+other tools. Use `--rows` to change the maximum number of citing papers
+retrieved (default: 10).
 
 For example, request up to 20 citing papers with:
 

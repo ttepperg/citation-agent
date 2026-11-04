@@ -6,7 +6,7 @@
 2. [ ] Discuss project guardrails and related boundaries.
 3. [ ] Discuss whether users should be able to run the pipeline through a browser UI.
 4. [ ] Review pipeline structure based on Mermaid diagram in PIPELINE.md; can we simplify?
-5. [ ] Dump results to a new file report_BIBCODE.json; create template dynamic page to load report
+5. [ ] Create a template-driven page that loads a saved JSON report.
 
 ## Completed
 
@@ -18,3 +18,4 @@
 - [x] Add an architecture sketch of the citation agent to `PIPELINE.md`.
 - [x] Generate and display a summary of the target paper from its ADS abstract.
 - [x] Save generated HTML reports in a `citation_reports` folder.
+- [x] Save workflow results as per-bibcode JSON files alongside HTML reports.

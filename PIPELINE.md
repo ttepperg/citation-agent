@@ -26,15 +26,16 @@ flowchart LR
     Workflow --> CLI
     CLI --> Report[src/report.py]
     Report --> HTML[HTML report]
+    CLI --> JSON[JSON data]
     Report ~~~ CLI
 ```
 
 ## Main steps
 
 1. **Read the input** — [`src/cli.py`](src/cli.py) accepts a target bibcode and
-   optional `--rows` limit (default: 10). It calls the workflow and writes the
-   report under `citation_reports/` in the current working directory, creating
-   the folder if needed.
+   optional `--rows` limit (default: 10). It calls the workflow and saves HTML
+   and JSON files under `citation_reports/` in the current working directory,
+   creating the folder if needed.
 2. **Retrieve and normalize the target** — [`src/workflow.py`](src/workflow.py)
    gets the target paper from ADS through [`src/ads.py`](src/ads.py) and
    converts it to a consistent record with [`src/normalize.py`](src/normalize.py).
@@ -59,9 +60,10 @@ flowchart LR
 6. **Render the report** — [`src/report.py`](src/report.py) creates a
    self-contained HTML page with the target summary and a card for each citing
    paper, including its normalized record, passages, and summary. Generation
-   details are available in collapsed sections. The CLI saves the file as
-   `citation_reports/citation_report_<encoded-bibcode>.html` and prints its
-   location.
+   details are available in collapsed sections. The CLI also saves the complete
+   workflow results as JSON for use by other tools. Both files share the
+   basename `citation_report_<encoded-bibcode>` and use `.html` and `.json`
+   extensions; their locations are printed.
 
 ## Run
 

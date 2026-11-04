@@ -5,6 +5,7 @@ From the project root, set ADS_API_TOKEN and OPENAI_API_KEY, then run:
 """
 
 import argparse
+import json
 from pathlib import Path
 from urllib.parse import quote
 
@@ -22,10 +23,18 @@ def main():
 
     print(f"Processing papers citing {args.target_bibcode}...", flush=True)
     results = summarize_citing_papers(args.target_bibcode, rows=args.rows)
-    filename = f"citation_report_{quote(args.target_bibcode, safe='')}.html"
+    filename = f"citation_report_{quote(args.target_bibcode, safe='')}"
     report_directory = Path.cwd() / "citation_reports"
     report_directory.mkdir(exist_ok=True)
-    report_path = report_directory / filename
+    json_path = report_directory / f"{filename}.json"
+    print("Saving JSON data...", flush=True)
+    json_path.write_text(
+        json.dumps(results, ensure_ascii=False, indent=2),
+        encoding="utf-8",
+    )
+    print(f"Saved JSON data to {json_path}")
+
+    report_path = report_directory / f"{filename}.html"
     print("Rendering HTML report...", flush=True)
     report_path.write_text(
         render_report(
