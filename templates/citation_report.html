@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Citation report viewer</title>
+  <style>
+    body {
+      max-width: 800px;
+      margin: 2rem auto;
+      padding: 0 1rem;
+      color: #20242a;
+      background: #f5f7fa;
+      font: 16px system-ui, sans-serif;
+    }
+    article {
+      margin: 1rem 0;
+      padding: 1rem 1.25rem;
+      border-radius: 10px;
+      background: white;
+      box-shadow: 0 2px 10px #1b2a3a18;
+    }
+    a { color: #1769aa; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    h2 { margin: .2rem 0; }
+    .bibcode, small { color: #586575; }
+    small.metadata { display: block; margin-top: .5rem; font-size: .8rem; }
+    details { margin-top: 1rem; }
+    li { margin: .5rem 0; }
+    #status { min-height: 1.5em; }
+  </style>
+</head>
+<body>
+  <h1>Citation report viewer</h1>
+  <p>Select a JSON report created by the citation agent.</p>
+  <input id="report-file" type="file" accept=".json,application/json">
+  <p id="status" role="status" aria-live="polite">No report selected.</p>
+  <main id="report" hidden></main>
+
+  <script>
+    const fileInput = document.getElementById("report-file");
+    const report = document.getElementById("report");
+    const status = document.getElementById("status");
+
+    function addText(parent, tagName, text, className) {
+      const element = document.createElement(tagName);
+      element.textContent = String(text ?? "");
+      if (className) element.className = className;
+      parent.append(element);
+      return element;
+    }
+
+    function citationLabel(record) {
+      const authors = Array.isArray(record.author) ? record.author : [];
+      const names = authors.map(author => String(author).split(",", 1)[0].trim());
+      let label = "Unknown author";
+      if (names.length > 2) label = `${names[0]} et al.`;
+      else if (names.length === 2) label = `${names[0]} & ${names[1]}`;
+      else if (names.length === 1) label = names[0];
+      return `${label} (${record.year || "year unknown"})`;
+    }
+
+    function addAdsLink(parent, bibcode, title) {
+      if (!bibcode) return addText(parent, "span", title);
+      const link = document.createElement("a");
+      link.href = `https://ui.adsabs.harvard.edu/abs/${encodeURIComponent(bibcode)}`;
+      link.target = "_blank";
+      link.rel = "noopener";
+      link.textContent = title;
+      parent.append(link);
+      return link;
+    }
+
+    function addMetadata(parent, metadata) {
+      if (!metadata) return;
+      const details = document.createElement("details");
+      details.className = "metadata";
+      addText(details, "summary", "Generation details");
+      const createdAt = typeof metadata.created_at === "number"
+        ? new Date(metadata.created_at * 1000).toISOString().slice(0, 16).replace("T", " ") + " UTC"
+        : "unknown time";
+      addText(
+        details,
+        "small",
+        `Generated with ${metadata.model || "unknown model"}; ` +
+        `temperature ${metadata.temperature ?? "unknown"}; ` +
+        `prompt ${metadata.prompt_version || "unknown"}; ` +
+        `response ${metadata.response_id || "unknown"}; ${createdAt}`,
+        "metadata",
+      );
+      parent.append(details);
+    }
+
+    function renderReport(data) {
+      if (!data || !data.target || !Array.isArray(data.citing_papers)) {
+        throw new Error("This file is not a citation report JSON file.");
+      }
+
+      report.replaceChildren();
+      const target = data.target;
+      const heading = document.createElement("h1");
+      addAdsLink(heading, target.bibcode, target.title || "Untitled paper");
+      heading.append(document.createTextNode(` — ${citationLabel(target)}`));
+      report.append(heading);
+      addText(report, "p", `Target bibcode: ${target.bibcode || ""}`, "bibcode");
+
+      const targetCard = document.createElement("article");
+      addText(targetCard, "h2", "About this paper");
+      addText(
+        targetCard,
+        "p",
+        data.target_summary?.summary || "No summary available.",
+      );
+      addMetadata(targetCard, data.target_summary?.metadata);
+      report.append(targetCard);
+
+      for (const result of data.citing_papers) {
+        const record = result.record || {};
+        const card = document.createElement("article");
+        const paperHeading = document.createElement("h2");
+        addAdsLink(paperHeading, record.bibcode, record.title || "Untitled paper");
+        paperHeading.append(
+          document.createTextNode(` (${record.year || "Year unknown"})`),
+        );
+        card.append(paperHeading);
+        addText(card, "p", record.bibcode || "", "bibcode");
+        addText(card, "p", result.summary || "No summary available.");
+
+        const details = document.createElement("details");
+        addText(details, "summary", "Citation passages");
+        const list = document.createElement("ul");
+        const passages = Array.isArray(result.passages) ? result.passages : [];
+        for (const passage of passages) addText(list, "li", passage);
+        if (!passages.length) addText(list, "li", "No citation passages found.");
+        details.append(list);
+        card.append(details);
+        addMetadata(card, result.summary_metadata);
+        report.append(card);
+      }
+
+      report.hidden = false;
+    }
+
+    fileInput.addEventListener("change", async () => {
+      const file = fileInput.files[0];
+      if (!file) return;
+
+      report.hidden = true;
+      report.replaceChildren();
+      status.textContent = `Loading ${file.name}...`;
+      try {
+        renderReport(JSON.parse(await file.text()));
+        status.textContent = `Loaded ${file.name}.`;
+      } catch (error) {
+        status.textContent = `Could not load report: ${error.message}`;
+      }
+    });
+  </script>
+</body>
+</html>

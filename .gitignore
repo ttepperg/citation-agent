@@ -2,3 +2,5 @@ Project_Proposal
 __pycache__/
 *.py[cod]
 *.html
+!templates/citation_report.html
+/citation_reports/
