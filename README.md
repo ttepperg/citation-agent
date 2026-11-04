@@ -32,38 +32,40 @@ citing-paper records, passages, summaries, and generation metadata for use by
 other tools. Use `--rows` to change the maximum number of citing papers
 retrieved (default: 10).
 
-## View a saved JSON report
-
-Open `templates/citation_report.html` in a browser and select a JSON report
-with the file picker. To load a report by bibcode instead, start a local server
-from the project root:
-
-```sh
-python3.12 -m http.server --bind 127.0.0.1 8000
-```
-
-Then open this URL, replacing the bibcode as needed:
-
-```text
-http://127.0.0.1:8000/templates/citation_report.html?bibcode=2024MNRAS.535..187T
-```
-
-The viewer loads the matching JSON file from `citation_reports/`. In a bibcode
-containing `&`, write `%26` in the URL.
-
 For example, request up to 20 citing papers with:
 
 ```sh
 python3.12 -m src.cli "2024MNRAS.535..187T" --rows 20
 ```
 
-From the project root, retrieve normalized records for a bibcode:
+To retrieve normalized records for papers citing a bibcode without generating
+summaries or an HTML report, run:
 
 ```sh
 python3.12 -c 'from src.ads import get_citing_papers_normalised; print(get_citing_papers_normalised("1998AJ....116.1009R"))'
 ```
 
-Each result contains `bibcode`, `title`, `author`, `year`, and `doi`. The default query returns up to 10 citing papers.
+Each result contains `bibcode`, `title`, `author`, `year`, `doi`, and
+`abstract`. The default query returns up to 10 citing papers.
+
+## View a saved JSON report
+
+Open `templates/citation_report.html` in a browser and select a JSON report
+with the file picker. To load a report by bibcode, start a local server from
+the project root:
+
+```sh
+python3.12 -m http.server --bind 127.0.0.1 8000
+```
+
+Open the viewer page:
+
+```text
+http://127.0.0.1:8000/templates/citation_report.html
+```
+
+Enter the bibcode in the **Load by bibcode** field and click **Load report**.
+The viewer loads the matching JSON file from `citation_reports/`.
 
 ## One-paper live checks
 
