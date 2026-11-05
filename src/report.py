@@ -1,4 +1,4 @@
-"""Render citation summaries as a self-contained HTML report."""
+"""Render citation summaries as a standalone HTML report."""
 
 from datetime import datetime, timezone
 from html import escape
@@ -80,6 +80,8 @@ def render_report(target_record, results, target_summary=None):
         f'<meta name="target-bibcode" content="{target_bibcode}">'
         "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">"
         "<title>Citation report</title>"
+        '<script defer src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-svg.js">'
+        "</script>"
         "<style>body{font:16px system-ui;max-width:800px;margin:2rem auto;"
         "padding:0 1rem;color:#20242a;background:#f5f7fa}"
         "article{background:white;padding:1rem 1.25rem;margin:1rem 0;"

@@ -51,3 +51,18 @@ def test_render_report_displays_and_escapes_citation_results():
     assert "prompt citation-summary-v2 &lt;test&gt;" in html
     assert "response resp_&lt;id&gt;" in html
     assert "1970-01-01 00:00 UTC" in html
+
+
+def test_render_report_preserves_unicode_math_and_escapes_markup():
+    summary = "Accents: \u0129 and i\u0303; math: \\(A_2/A_0\\); markup: <tag> &."
+    html = render_report(
+        {"bibcode": "TARGET", "author": [], "year": "2024"},
+        [{
+            "record": {"bibcode": "CITING", "year": "2025"},
+            "passages": [],
+            "summary": summary,
+        }],
+    )
+
+    assert "Accents: \u0129 and i\u0303; math: \\(A_2/A_0\\); " in html
+    assert "markup: &lt;tag&gt; &amp;." in html

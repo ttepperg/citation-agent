@@ -4,6 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Citation report viewer</title>
+  <script defer src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-svg.js"></script>
   <style>
     body {
       max-width: 800px;
@@ -160,6 +161,7 @@
       status.textContent = `Loading ${source}...`;
       try {
         renderReport(await jsonPromise);
+        if (window.MathJax) await MathJax.typesetPromise([report]);
         status.textContent = `Loaded ${source}.`;
       } catch (error) {
         status.textContent = `Could not load report: ${error.message}`;
@@ -186,11 +188,13 @@
       if (file) loadReport(file.text().then(JSON.parse), file.name);
     });
 
-    const bibcode = new URLSearchParams(window.location.search).get("bibcode");
-    if (bibcode) {
-      bibcodeInput.value = bibcode;
-      loadFromServer(bibcode);
-    }
+    document.addEventListener("DOMContentLoaded", () => {
+      const bibcode = new URLSearchParams(window.location.search).get("bibcode");
+      if (bibcode) {
+        bibcodeInput.value = bibcode;
+        loadFromServer(bibcode);
+      }
+    });
   </script>
 </body>
 </html>
