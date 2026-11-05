@@ -7,6 +7,7 @@
 3. [ ] Review pipeline structure based on Mermaid diagram in PIPELINE.md; can we simplify?
 4. [ ] Reconsider removing per-bibcode HTML reports: JSON plus the viewer avoids duplicate output, but standalone HTML is easy to share and open in any browser.
 5. [ ] Discuss whether the agente can be made platform-agnostic, i.e. use other LLMs
+6. [ ] Highlight target paper (author+year) in HTML citation passages
 
 ## Completed
 
