@@ -1,7 +1,7 @@
 """Process citing papers into normalized records, passages, and summaries."""
 
 from src.ads import get_paper, get_citing_papers
-from src.normalize import normalise_record
+from src.normalize import format_citation_label, normalise_record
 from src.passages import get_citation_passages
 from src.summarize import summarize_paper, summarize_target_paper
 
@@ -31,9 +31,19 @@ def summarize_citing_papers(target_bibcode, token=None, rows=10, api_key=None):
         )
         record = normalise_record(paper)
         passages = get_citation_passages(target, paper, token)
-        summary_result = summarize_paper(
-            target_record, record, passages, api_key
-        )
+        if passages:
+            summary_result = summarize_paper(
+                target_record, record, passages, api_key
+            )
+        else:
+            summary_result = {
+                "summary": (
+                    "No citation passages were available, so there is not "
+                    "enough context to determine how this paper uses "
+                    f"{format_citation_label(target_record)}."
+                ),
+                "metadata": None,
+            }
         results.append({
             "record": record,
             "passages": passages,

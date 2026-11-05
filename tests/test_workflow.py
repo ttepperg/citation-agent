@@ -4,6 +4,8 @@ Run from the project root with:
     python3.12 -m pytest tests/test_workflow.py
 """
 
+from unittest.mock import Mock
+
 from src import workflow
 
 
@@ -56,3 +58,39 @@ def test_summarize_citing_papers_reports_total_and_keeps_summary_metadata(
         "ADS found 17 citing papers; processing 1 (limit: 1)."
         in capsys.readouterr().out
     )
+
+
+def test_summarize_citing_papers_skips_llm_when_no_passages(monkeypatch):
+    target = {
+        "bibcode": "TARGET",
+        "title": "Target paper",
+        "author": ["Target, A."],
+        "year": "2025",
+    }
+    citing = {"bibcode": "CITING", "title": "Citing paper", "year": "2026"}
+    summarize = Mock()
+    monkeypatch.setattr(workflow, "get_paper", lambda bibcode, token: target)
+    monkeypatch.setattr(
+        workflow, "get_citing_papers",
+        lambda bibcode, token, rows: ([citing], 1),
+    )
+    monkeypatch.setattr(workflow, "normalise_record", lambda record: record)
+    monkeypatch.setattr(
+        workflow, "summarize_target_paper",
+        lambda record, api_key: {"summary": "Target summary", "metadata": None},
+    )
+    monkeypatch.setattr(workflow, "get_citation_passages", lambda *args: [])
+    monkeypatch.setattr(workflow, "summarize_paper", summarize)
+
+    result = workflow.summarize_citing_papers("TARGET")
+
+    summarize.assert_not_called()
+    assert result["citing_papers"] == [{
+        "record": citing,
+        "passages": [],
+        "summary": (
+            "No citation passages were available, so there is not enough "
+            "context to determine how this paper uses Target (2025)."
+        ),
+        "summary_metadata": None,
+    }]
