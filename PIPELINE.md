@@ -54,18 +54,21 @@ flowchart LR
    then by a unique first-author/year pair. If the resolver or arXiv HTML is
    unavailable (HTTP 404 or 403), the paper has no extracted passages; network
    errors otherwise stop the workflow.
-5. **Summarize citation use** — For each citing paper,
-   [`src/summarize.py`](src/summarize.py) sends the target identity, citing-paper
-   identity, and extracted passages to the OpenAI API. The passages provide
-   evidence for the summary. When none are found, the summary has no passage
-   context to use.
+5. **Summarize citation use** — When passages are available,
+   [`src/workflow.py`](src/workflow.py) sends the target identity, citing-paper
+   identity, and extracted passages to [`src/summarize.py`](src/summarize.py),
+   which calls the OpenAI API. The passages provide evidence for the summary.
+   If none are available, the workflow returns a fixed “not enough context”
+   message and skips the OpenAI request for that citing paper.
 6. **Render the report** — [`src/report.py`](src/report.py) creates a
-   self-contained HTML page with the target summary and a card for each citing
-   paper, including its normalized record, passages, and summary. Generation
-   details are available in collapsed sections. The CLI also saves the complete
-   workflow results as JSON for use by other tools. Both files share the
-   basename `citation_report_<encoded-bibcode>` and use `.html` and `.json`
-   extensions; their locations are printed.
+   standalone HTML page with the target summary and a card for each citing
+   paper, including its normalized record, passages, and summary. MathJax loads
+   from a CDN to render math; without an internet connection, the original TeX
+   notation remains readable. Generation details are available in collapsed
+   sections. The CLI also saves the complete workflow results as JSON for use
+   by other tools. Both files share the basename
+   `citation_report_<encoded-bibcode>` and use `.html` and `.json` extensions;
+   their locations are printed.
 7. **View a saved JSON report** — `templates/citation_report.html` renders a
    selected JSON file with its file picker. When served locally, it can also
    fetch the JSON by bibcode from `citation_reports/`.
