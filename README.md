@@ -16,7 +16,7 @@ Set your OpenAI API key as well to summarize citation passages:
 export OPENAI_API_KEY="your OpenAI API key"
 ```
 
-Run the pipeline from the project root with a target ADS bibcode:
+Run the pipeline *from the project root* with a target ADS bibcode:
 
 ```sh
 python3.12 -m src.cli "1998AJ....116.1009R"
@@ -51,8 +51,7 @@ Each result contains `bibcode`, `title`, `author`, `year`, `doi`, and
 ## View a saved JSON report
 
 Open `templates/citation_report.html` in a browser and select a JSON report
-with the file picker. To load a report by bibcode, start a local server from
-the project root:
+with the file picker. To load a report by bibcode, start a local server *from the project root*:
 
 ```sh
 python3.12 -m http.server --bind 127.0.0.1 8000
