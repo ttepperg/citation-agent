@@ -7,6 +7,7 @@
 3. [ ] Discuss whether users should be able to run the pipeline through a browser UI.
 4. [ ] Review pipeline structure based on Mermaid diagram in PIPELINE.md; can we simplify?
 5. [ ] Reconsider removing per-bibcode HTML reports: JSON plus the viewer avoids duplicate output, but standalone HTML is easy to share and open in any browser.
+6. [ ] Discuss whether the agente can be made platform-agnostic, i.e. use other LLMs
 
 ## Completed
 
