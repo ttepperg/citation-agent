@@ -48,6 +48,20 @@ python3.12 -c 'from src.ads import get_citing_papers_normalised; print(get_citin
 Each result contains `bibcode`, `title`, `author`, `year`, `doi`, and
 `abstract`. The default query returns up to 10 citing papers.
 
+## Scope and data use
+
+The agent summarizes how a citing paper uses the target, based on passages
+linked to its reference entry. It does not independently verify claims or
+assess paper quality; check the cited passages and source papers when accuracy
+matters.
+
+The pipeline retrieves records from ADS and citing-paper HTML from arXiv when
+available. It sends the target title and abstract to OpenAI for the target
+summary, and sends selected citation passages with the papers' bibliographic
+identities for citing-paper summaries. It does not send the full arXiv HTML to
+OpenAI. If no citation passages are available, the agent returns a fixed
+“not enough context” message without an OpenAI request for that citing paper.
+
 ## View a saved JSON report
 
 Open `templates/citation_report.html` in a browser and select a JSON report

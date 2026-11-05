@@ -2,12 +2,11 @@
 
 ## Open tasks, in priority order
 
-1. [ ] Discuss project guardrails and related boundaries.
-2. [ ] Discuss whether users should be able to run the pipeline through a browser UI.
-3. [ ] Review pipeline structure based on Mermaid diagram in PIPELINE.md; can we simplify?
-4. [ ] Reconsider removing per-bibcode HTML reports: JSON plus the viewer avoids duplicate output, but standalone HTML is easy to share and open in any browser.
-5. [ ] Discuss whether the agente can be made platform-agnostic, i.e. use other LLMs
-6. [ ] Highlight target paper (author+year) in HTML citation passages
+1. [ ] Discuss whether users should be able to run the pipeline through a browser UI.
+2. [ ] Review pipeline structure based on Mermaid diagram in PIPELINE.md; can we simplify?
+3. [ ] Reconsider removing per-bibcode HTML reports: JSON plus the viewer avoids duplicate output, but standalone HTML is easy to share and open in any browser.
+4. [ ] Discuss whether the agente can be made platform-agnostic, i.e. use other LLMs
+5. [ ] Highlight target paper (author+year) in HTML citation passages
 
 ## Completed
 
@@ -22,3 +21,4 @@
 - [x] Save workflow results as per-bibcode JSON files alongside HTML reports.
 - [x] Create a template-driven JSON report viewer with file-picker and local-server loading.
 - [x] Render accents, special characters, and LaTeX math correctly in both HTML report paths.
+- [x] Discuss and implement guardrails for citation attribution, evidence use, and data flow.
