@@ -2,12 +2,11 @@
 
 ## Open tasks, in priority order
 
-1. [ ] Check how special characters in summaries render in the HTML report.
-2. [ ] Discuss project guardrails and related boundaries.
-3. [ ] Discuss whether users should be able to run the pipeline through a browser UI.
-4. [ ] Review pipeline structure based on Mermaid diagram in PIPELINE.md; can we simplify?
-5. [ ] Reconsider removing per-bibcode HTML reports: JSON plus the viewer avoids duplicate output, but standalone HTML is easy to share and open in any browser.
-6. [ ] Discuss whether the agente can be made platform-agnostic, i.e. use other LLMs
+1. [ ] Discuss project guardrails and related boundaries.
+2. [ ] Discuss whether users should be able to run the pipeline through a browser UI.
+3. [ ] Review pipeline structure based on Mermaid diagram in PIPELINE.md; can we simplify?
+4. [ ] Reconsider removing per-bibcode HTML reports: JSON plus the viewer avoids duplicate output, but standalone HTML is easy to share and open in any browser.
+5. [ ] Discuss whether the agente can be made platform-agnostic, i.e. use other LLMs
 
 ## Completed
 
@@ -21,3 +20,4 @@
 - [x] Save generated HTML reports in a `citation_reports` folder.
 - [x] Save workflow results as per-bibcode JSON files alongside HTML reports.
 - [x] Create a template-driven JSON report viewer with file-picker and local-server loading.
+- [x] Render accents, special characters, and LaTeX math correctly in both HTML report paths.

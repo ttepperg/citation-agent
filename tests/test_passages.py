@@ -67,6 +67,29 @@ def test_find_citation_passages_matches_unique_author_year_reference():
     ]
 
 
+def test_find_citation_passages_uses_tex_alttext_without_duplicate_mathml():
+    html = r"""
+    <article>
+      <p>The gas fraction is <math alttext="20\%" display="inline">
+        <semantics><mn>20</mn><mo>%</mo>
+          <annotation encoding="application/x-tex">20\%</annotation>
+        </semantics>
+      </math>, citing <a href="#bib.bib1">the Nexus framework</a>.</p>
+      <li id="bib.bib1">Tepper-García et al., 2024, MNRAS</li>
+    </article>
+    """
+    target = {
+        "bibcode": "2024MNRAS.535..187T",
+        "title": ["Nexus framework"],
+        "author": ["Tepper-García, Thor"],
+        "year": "2024",
+    }
+
+    assert find_citation_passages(html, target) == [
+        r"The gas fraction is \(20\%\), citing the Nexus framework."
+    ]
+
+
 def test_find_citation_passages_matches_title_when_reference_year_differs():
     html = """
     <article>

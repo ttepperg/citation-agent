@@ -18,12 +18,25 @@ class _CitationParser(HTMLParser):
         self.reference_text = []
         self.reference_links = []
         self.paragraph = None
+        self.in_math = False
 
     def handle_starttag(self, tag, attrs):
+        if self.in_math:
+            return
         attrs = dict(attrs)
         element_id = attrs.get("id", "")
         if self.reference_id is not None and tag == "a":
             self.reference_links.append(attrs.get("href", ""))
+        elif tag == "math" and self.paragraph is not None:
+            tex = attrs.get("alttext")
+            if tex:
+                left, right = (
+                    (r"\[", r"\]")
+                    if attrs.get("display") == "block"
+                    else (r"\(", r"\)")
+                )
+                self.paragraph["text"].append(f"{left}{tex}{right}")
+                self.in_math = True
         elif self.reference_id is None and element_id.startswith("bib.bib"):
             self.reference_id = element_id
             self.reference_tag = tag
@@ -37,13 +50,17 @@ class _CitationParser(HTMLParser):
                 self.paragraph["references"].append(href[1:])
 
     def handle_data(self, data):
+        if self.in_math:
+            return
         if self.reference_id is not None:
             self.reference_text.append(data)
         if self.paragraph is not None:
             self.paragraph["text"].append(data)
 
     def handle_endtag(self, tag):
-        if self.reference_id is not None and tag == self.reference_tag:
+        if tag == "math" and self.in_math:
+            self.in_math = False
+        elif self.reference_id is not None and tag == self.reference_tag:
             self.references[self.reference_id] = {
                 "text": " ".join("".join(self.reference_text).split()),
                 "links": self.reference_links,
