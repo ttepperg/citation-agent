@@ -7,6 +7,22 @@ from urllib.parse import quote
 from src.normalize import format_citation_label
 
 
+def _render_passage(passage, target_citation_labels):
+    passage_html = escape(passage)
+    labels = sorted(
+        (str(label) for label in target_citation_labels if label),
+        key=len,
+        reverse=True,
+    )
+    for label in labels:
+        safe_label = escape(label)
+        passage_html = passage_html.replace(
+            safe_label,
+            f'<mark class="target-citation">{safe_label}</mark>',
+        )
+    return passage_html
+
+
 def _render_metadata(metadata):
     if not metadata:
         return ""
@@ -61,8 +77,10 @@ def render_report(target_record, results, target_summary=None):
         year = escape(str(record.get("year") or "Year unknown"))
         summary = escape(result.get("summary") or "No summary available.")
         metadata_note = _render_metadata(result.get("summary_metadata"))
+        target_citation_labels = result.get("target_citation_labels") or []
         passages = "".join(
-            f"<li>{escape(passage)}</li>" for passage in result["passages"]
+            f"<li>{_render_passage(passage, target_citation_labels)}</li>"
+            for passage in result["passages"]
         ) or "<li>No citation passages found.</li>"
         cards.append(
             f'<article><h2><a href="{paper_url}" target="_blank" '
@@ -87,6 +105,8 @@ def render_report(target_record, results, target_summary=None):
         "article{background:white;padding:1rem 1.25rem;margin:1rem 0;"
         "border-radius:10px;box-shadow:0 2px 10px #1b2a3a18}"
         "a{color:#1769aa;text-decoration:none}a:hover{text-decoration:underline}"
+        "mark.target-citation{background:#fff1a8;padding:0 .12em;"
+        "border-radius:2px}"
         "h2{margin:.2rem 0}.bibcode,small{color:#586575}"
         "small.metadata{display:block;margin-top:.5rem;font-size:.8rem}"
         "details{margin-top:1rem}li{margin:.5rem 0}</style></head><body>"

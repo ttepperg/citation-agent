@@ -26,6 +26,11 @@
     h2 { margin: .2rem 0; }
     .bibcode, small { color: #586575; }
     small.metadata { display: block; margin-top: .5rem; font-size: .8rem; }
+    mark.target-citation {
+      border-radius: 2px;
+      background: #fff1a8;
+      padding: 0 .12em;
+    }
     details { margin-top: 1rem; }
     li { margin: .5rem 0; }
     #status { min-height: 1.5em; }
@@ -62,6 +67,37 @@
       if (className) element.className = className;
       parent.append(element);
       return element;
+    }
+
+    function addHighlightedText(parent, text, labels) {
+      const source = String(text ?? "");
+      const markers = (Array.isArray(labels) ? labels : [])
+        .filter(Boolean)
+        .map(String)
+        .sort((a, b) => b.length - a.length);
+      let offset = 0;
+
+      while (offset < source.length) {
+        let matchAt = source.length;
+        let match = "";
+        for (const marker of markers) {
+          const index = source.indexOf(marker, offset);
+          if (index !== -1 && index < matchAt) {
+            matchAt = index;
+            match = marker;
+          }
+        }
+        if (!match) {
+          parent.append(document.createTextNode(source.slice(offset)));
+          break;
+        }
+        parent.append(document.createTextNode(source.slice(offset, matchAt)));
+        const mark = document.createElement("mark");
+        mark.className = "target-citation";
+        mark.textContent = match;
+        parent.append(mark);
+        offset = matchAt + match.length;
+      }
     }
 
     function citationLabel(record) {
@@ -144,7 +180,11 @@
         addText(details, "summary", "Citation passages");
         const list = document.createElement("ul");
         const passages = Array.isArray(result.passages) ? result.passages : [];
-        for (const passage of passages) addText(list, "li", passage);
+        for (const passage of passages) {
+          const item = document.createElement("li");
+          addHighlightedText(item, passage, result.target_citation_labels);
+          list.append(item);
+        }
         if (!passages.length) addText(list, "li", "No citation passages found.");
         details.append(list);
         card.append(details);

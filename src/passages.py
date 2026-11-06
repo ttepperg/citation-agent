@@ -18,6 +18,7 @@ class _CitationParser(HTMLParser):
         self.reference_text = []
         self.reference_links = []
         self.paragraph = None
+        self.citation_anchor = None
         self.in_math = False
 
     def handle_starttag(self, tag, attrs):
@@ -47,7 +48,8 @@ class _CitationParser(HTMLParser):
         elif self.paragraph is not None and tag == "a":
             href = attrs.get("href", "")
             if href.startswith("#bib."):
-                self.paragraph["references"].append(href[1:])
+                self.citation_anchor = {"id": href[1:], "text": []}
+                self.paragraph["references"].append(self.citation_anchor)
 
     def handle_data(self, data):
         if self.in_math:
@@ -56,10 +58,14 @@ class _CitationParser(HTMLParser):
             self.reference_text.append(data)
         if self.paragraph is not None:
             self.paragraph["text"].append(data)
+            if self.citation_anchor is not None:
+                self.citation_anchor["text"].append(data)
 
     def handle_endtag(self, tag):
         if tag == "math" and self.in_math:
             self.in_math = False
+        elif tag == "a" and self.citation_anchor is not None:
+            self.citation_anchor = None
         elif self.reference_id is not None and tag == self.reference_tag:
             self.references[self.reference_id] = {
                 "text": " ".join("".join(self.reference_text).split()),
@@ -74,6 +80,11 @@ class _CitationParser(HTMLParser):
 
 def find_citation_passages(html, target_record):
     """Return paragraphs linking to the bibliography entry for target_record."""
+    return find_citation_passage_details(html, target_record)["passages"]
+
+
+def find_citation_passage_details(html, target_record):
+    """Return passages and the exact text of links to the target reference."""
     parser = _CitationParser()
     parser.feed(html)
 
@@ -115,11 +126,24 @@ def find_citation_passages(html, target_record):
             if len(author_year_references) == 1:
                 target_references = author_year_references
 
-    return [
-        " ".join("".join(paragraph["text"]).split())
-        for paragraph in parser.paragraphs
-        if any(ref in target_references for ref in paragraph["references"])
-    ]
+    passages = []
+    target_citation_labels = []
+    for paragraph in parser.paragraphs:
+        matches = [
+            reference for reference in paragraph["references"]
+            if reference["id"] in target_references
+        ]
+        if not matches:
+            continue
+        passages.append(" ".join("".join(paragraph["text"]).split()))
+        for match in matches:
+            label = " ".join("".join(match["text"]).split())
+            if label and label not in target_citation_labels:
+                target_citation_labels.append(label)
+    return {
+        "passages": passages,
+        "target_citation_labels": target_citation_labels,
+    }
 
 
 def _normalise_title(title):
@@ -133,7 +157,14 @@ def _normalise_title(title):
 
 
 def get_citation_passages(target_record, citing_paper, token=None):
-    """Fetch a citing paper's arXiv HTML and return passages citing target."""
+    """Fetch and return passage text citing the target."""
+    return get_citation_passage_details(
+        target_record, citing_paper, token
+    )["passages"]
+
+
+def get_citation_passage_details(target_record, citing_paper, token=None):
+    """Fetch passages and target citation labels from a citing paper."""
     citing_bibcode = citing_paper["bibcode"]
     token = token or os.environ.get("ADS_API_TOKEN")
     if not token:
@@ -147,7 +178,7 @@ def get_citation_passages(target_record, citing_paper, token=None):
         resolver_request, "ADS link resolver", read=True, allow_404=True
     )
     if resolver_data is None:
-        return []
+        return {"passages": [], "target_citation_labels": []}
     resolved_url = json.loads(resolver_data)["link"]
     html_url = resolved_url.replace("arxiv.org/abs/", "arxiv.org/html/", 1)
     _, html = _get_url(
@@ -158,8 +189,8 @@ def get_citation_passages(target_record, citing_paper, token=None):
         allow_403=True,
     )
     if html is None:
-        return []
-    return find_citation_passages(
+        return {"passages": [], "target_citation_labels": []}
+    return find_citation_passage_details(
         html.decode("utf-8", errors="replace"), target_record
     )
 

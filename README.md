@@ -29,8 +29,9 @@ working directory, creating `citation_reports/` if needed. It prints both
 paths. Each target bibcode gets distinct filenames. The HTML report can be
 opened in a browser; the JSON file contains the target, target summary, and
 citing-paper records, passages, summaries, and generation metadata for use by
-other tools. Use `--rows` to change the maximum number of citing papers
-retrieved (default: 10).
+other tools. Both HTML report formats highlight the target's in-text citation
+label (for example, `[56]`) in extracted passages when available. Use `--rows`
+to change the maximum number of citing papers retrieved (default: 10).
 
 For example, request up to 20 citing papers with:
 

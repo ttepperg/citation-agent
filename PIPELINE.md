@@ -51,9 +51,10 @@ flowchart LR
    [`src/passages.py`](src/passages.py) uses the ADS link resolver to find its
    arXiv HTML, then connects in-text links to individual bibliography entries.
    It matches the target by bibcode or DOI, then by a unique normalized title,
-   then by a unique first-author/year pair. If the resolver or arXiv HTML is
-   unavailable (HTTP 404 or 403), the paper has no extracted passages; network
-   errors otherwise stop the workflow.
+   then by a unique first-author/year pair. For each passage, it records the
+   visible text of links to the matched target reference. If the resolver or
+   arXiv HTML is unavailable (HTTP 404 or 403), the paper has no extracted
+   passages; network errors otherwise stop the workflow.
 5. **Summarize citation use** — When passages are available,
    [`src/workflow.py`](src/workflow.py) sends the target identity, citing-paper
    identity, and extracted passages to [`src/summarize.py`](src/summarize.py),
@@ -64,9 +65,12 @@ flowchart LR
    standalone HTML page with the target summary and a card for each citing
    paper, including its normalized record, passages, and summary. MathJax loads
    from a CDN to render math; without an internet connection, the original TeX
-   notation remains readable. Generation details are available in collapsed
-   sections. The CLI also saves the complete workflow results as JSON for use
-   by other tools. Both files share the basename
+   notation remains readable. The report highlights the target-linked citation
+   text within each passage. The JSON includes that text in the
+   `target_citation_labels` field so the generic viewer can highlight it too.
+   Generation details are available in collapsed sections. The CLI also saves
+   the complete workflow results as JSON for use by other tools. Both files
+   share the basename
    `citation_report_<encoded-bibcode>` and use `.html` and `.json` extensions;
    their locations are printed.
 7. **View a saved JSON report** — `templates/citation_report.html` renders a

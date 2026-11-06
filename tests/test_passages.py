@@ -10,7 +10,7 @@ from urllib.error import HTTPError
 import pytest
 
 from src import passages
-from src.passages import find_citation_passages
+from src.passages import find_citation_passage_details, find_citation_passages
 
 
 def test_find_citation_passages_follows_links_to_target_reference():
@@ -40,6 +40,31 @@ def test_find_citation_passages_follows_links_to_target_reference():
     assert find_citation_passages(html, target) == [
         "First use links to Riess et al. (1998).",
         "Another discussion cites the same work.",
+    ]
+
+
+def test_find_citation_passage_details_returns_target_anchor_text():
+    html = """
+    <article>
+      <p>Previous simulations <a href="#bib.bib56">[56]</a> show this effect.</p>
+      <li id="bib.bib56">Target paper, 2025, MNRAS
+        <a href="https://doi.org/10.1234/example">DOI</a>
+      </li>
+    </article>
+    """
+    target = {
+        "bibcode": "TARGET",
+        "title": ["Target paper"],
+        "year": "2025",
+        "doi": ["10.1234/example"],
+    }
+
+    assert find_citation_passage_details(html, target) == {
+        "passages": ["Previous simulations [56] show this effect."],
+        "target_citation_labels": ["[56]"],
+    }
+    assert find_citation_passages(html, target) == [
+        "Previous simulations [56] show this effect."
     ]
 
 

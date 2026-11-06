@@ -6,7 +6,7 @@
 2. [ ] Review pipeline structure based on Mermaid diagram in PIPELINE.md; can we simplify?
 3. [ ] Reconsider removing per-bibcode HTML reports: JSON plus the viewer avoids duplicate output, but standalone HTML is easy to share and open in any browser.
 4. [ ] Discuss whether the agente can be made platform-agnostic, i.e. use other LLMs
-5. [ ] Highlight target paper (author+year) in HTML citation passages
+5. [ ] Consider using bold text instead of highlighting target citations in HTML passages.
 
 ## Completed
 
@@ -22,3 +22,4 @@
 - [x] Create a template-driven JSON report viewer with file-picker and local-server loading.
 - [x] Render accents, special characters, and LaTeX math correctly in both HTML report paths.
 - [x] Discuss and implement guardrails for citation attribution, evidence use, and data flow.
+- [x] Highlight target-linked citation labels in HTML passages.

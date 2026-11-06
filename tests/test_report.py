@@ -66,3 +66,20 @@ def test_render_report_preserves_unicode_math_and_escapes_markup():
 
     assert "Accents: \u0129 and i\u0303; math: \\(A_2/A_0\\); " in html
     assert "markup: &lt;tag&gt; &amp;." in html
+
+
+def test_render_report_highlights_target_citation_label():
+    html = render_report(
+        {"bibcode": "TARGET", "author": ["Target, A."], "year": "2025"},
+        [{
+            "record": {"bibcode": "CITING"},
+            "passages": ["Previous simulations [56] and [57] show this."],
+            "target_citation_labels": ["[56]"],
+            "summary": "It compares the simulations.",
+        }],
+    )
+
+    assert (
+        "Previous simulations <mark class=\"target-citation\">[56]</mark> "
+        "and [57] show this."
+    ) in html

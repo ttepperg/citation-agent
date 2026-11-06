@@ -33,8 +33,11 @@ def test_summarize_citing_papers_reports_total_and_keeps_summary_metadata(
     )
     monkeypatch.setattr(workflow, "normalise_record", lambda record: record)
     monkeypatch.setattr(
-        workflow, "get_citation_passages",
-        lambda target_record, paper, token: ["The target is used as a baseline."],
+        workflow, "get_citation_passage_details",
+        lambda target_record, paper, token: {
+            "passages": ["The target is used as a baseline."],
+            "target_citation_labels": ["[56]"],
+        },
     )
     monkeypatch.setattr(
         workflow, "summarize_paper",
@@ -51,6 +54,7 @@ def test_summarize_citing_papers_reports_total_and_keeps_summary_metadata(
     assert result["citing_papers"] == [{
         "record": citing,
         "passages": ["The target is used as a baseline."],
+        "target_citation_labels": ["[56]"],
         "summary": "It provides a baseline.",
         "summary_metadata": metadata,
     }]
@@ -79,7 +83,10 @@ def test_summarize_citing_papers_skips_llm_when_no_passages(monkeypatch):
         workflow, "summarize_target_paper",
         lambda record, api_key: {"summary": "Target summary", "metadata": None},
     )
-    monkeypatch.setattr(workflow, "get_citation_passages", lambda *args: [])
+    monkeypatch.setattr(
+        workflow, "get_citation_passage_details",
+        lambda *args: {"passages": [], "target_citation_labels": []},
+    )
     monkeypatch.setattr(workflow, "summarize_paper", summarize)
 
     result = workflow.summarize_citing_papers("TARGET")
@@ -88,6 +95,7 @@ def test_summarize_citing_papers_skips_llm_when_no_passages(monkeypatch):
     assert result["citing_papers"] == [{
         "record": citing,
         "passages": [],
+        "target_citation_labels": [],
         "summary": (
             "No citation passages were available, so there is not enough "
             "context to determine how this paper uses Target (2025)."

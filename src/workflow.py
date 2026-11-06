@@ -2,7 +2,7 @@
 
 from src.ads import get_paper, get_citing_papers
 from src.normalize import format_citation_label, normalise_record
-from src.passages import get_citation_passages
+from src.passages import get_citation_passage_details
 from src.summarize import summarize_paper, summarize_target_paper
 
 
@@ -30,7 +30,8 @@ def summarize_citing_papers(target_bibcode, token=None, rows=10, api_key=None):
             flush=True,
         )
         record = normalise_record(paper)
-        passages = get_citation_passages(target, paper, token)
+        passage_details = get_citation_passage_details(target, paper, token)
+        passages = passage_details["passages"]
         if passages:
             summary_result = summarize_paper(
                 target_record, record, passages, api_key
@@ -47,6 +48,9 @@ def summarize_citing_papers(target_bibcode, token=None, rows=10, api_key=None):
         results.append({
             "record": record,
             "passages": passages,
+            "target_citation_labels": passage_details[
+                "target_citation_labels"
+            ],
             "summary": summary_result["summary"],
             "summary_metadata": summary_result["metadata"],
         })
