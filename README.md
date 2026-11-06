@@ -101,6 +101,6 @@ The main `src.cli` pipeline does not require either of these one-paper scripts.
 
 ## Acknowledgement
 
-*Inspired by Sphynx* 🐈 (ChatGPT)
+*Inspired by Sphynx* 🐈
 
-*Built with Aeon* ℵ (Codex)
+*Built with Aeon* ℵ
