@@ -63,6 +63,7 @@
             const item = document.createElement("li");
             item.textContent = message;
             progress.append(item);
+            console.log(`[citation-agent] ${message}`);
           }
         }
 
@@ -83,14 +84,17 @@
           stopButton.disabled = false;
           status.classList.remove("processing");
           if (data.error) {
+            console.error(`[citation-agent] Run failed: ${data.error}`);
             status.textContent = `Run failed: ${data.error}`;
           } else if (data.complete) {
             status.textContent = "Run complete.";
             reportFrame.src = "/report";
             reportFrame.hidden = false;
             saveButton.disabled = false;
+            console.log("[citation-agent] Report rendered.");
           } else if (data.stopped || stopRequested) {
             status.textContent = "Run stopped and cleared.";
+            console.log("[citation-agent] Run stopped and cleared.");
             stopRequested = false;
           } else {
             status.textContent = "No run is active.";
@@ -100,6 +104,7 @@
         startButton.disabled = false;
         stopButton.hidden = true;
         status.classList.remove("processing");
+        console.error("[citation-agent] Could not check progress:", error);
         status.textContent = `Could not check progress: ${error.message}`;
       }
     }
@@ -109,6 +114,10 @@
       const body = new URLSearchParams(new FormData(form));
       startButton.disabled = true;
       bibcodeInput.disabled = true;
+      console.log("[citation-agent] Starting run.", {
+        bibcode: bibcodeInput.value.trim(),
+        rows: form.elements.rows.value,
+      });
       stopRequested = false;
       status.classList.remove("processing");
       progress.replaceChildren();
@@ -126,11 +135,13 @@
         const data = await response.json();
         if (!response.ok) throw new Error(data.error);
         status.textContent = data.message;
+        console.log("[citation-agent] Run started.");
         pollStatus();
       } catch (error) {
         startButton.disabled = false;
         bibcodeInput.disabled = false;
         stopButton.hidden = true;
+        console.error("[citation-agent] Could not start run:", error);
         status.textContent = `Could not start run: ${error.message}`;
       }
     });
@@ -145,6 +156,7 @@
       reportFrame.src = "about:blank";
       status.classList.remove("processing");
       status.textContent = "Stopping after the current request...";
+      console.log("[citation-agent] Stop requested; clearing the report and progress.");
       try {
         const response = await fetch("/stop", { method: "POST" });
         const data = await response.json();
@@ -152,6 +164,7 @@
         pollStatus();
       } catch (error) {
         stopButton.disabled = false;
+        console.error("[citation-agent] Could not stop run:", error);
         status.textContent = `Could not stop run: ${error.message}`;
       }
     });
@@ -165,7 +178,12 @@
         if (!response.ok) throw new Error(data.error);
         saveStatus.textContent =
           `Saved HTML: ${data.html_path}\nSaved JSON: ${data.json_path}`;
+        console.log("[citation-agent] Reports saved.", {
+          html: data.html_path,
+          json: data.json_path,
+        });
       } catch (error) {
+        console.error("[citation-agent] Could not save report:", error);
         saveStatus.textContent = `Could not save report: ${error.message}`;
       } finally {
         saveButton.disabled = false;

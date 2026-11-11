@@ -20,7 +20,7 @@
 11. [x] Add a Stop and clear button for an active run.
 12. [x] Remove redundant 'View citation report' link now that report loads automatically on same page
 13. [x] Clear server-side run state on page reload so it matches the reset UI.
-14. [ ] Add console.log() feedback for developers
+14. [x] Add browser console feedback for workflow milestones and errors.
 
 ## Other open tasks, in priority order
 
