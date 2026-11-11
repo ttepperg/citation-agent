@@ -49,6 +49,21 @@ python3.12 -c 'from src.ads import get_citing_papers_normalised; print(get_citin
 Each result contains `bibcode`, `title`, `author`, `year`, `doi`, and
 `abstract`. The default query returns up to 10 citing papers.
 
+### Run through a browser
+
+With the ADS and OpenAI keys set in the environment, start the local app from
+the project root:
+
+```sh
+python3.12 -m src.app
+```
+
+Open `http://127.0.0.1:8000`, enter a target bibcode and the maximum number of
+citing papers to process (default: 10), then click **Start run**. The page
+shows progress and provides a link to the completed HTML report. The browser
+app keeps the current result in memory; it is replaced by the next run and is
+lost when the app stops. Use the CLI to save HTML and JSON report files.
+
 ## Scope and data use
 
 The agent summarizes how a citing paper uses the target, based on passages

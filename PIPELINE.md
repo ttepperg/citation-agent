@@ -1,12 +1,14 @@
 # Pipeline overview
 
-The CLI turns a target ADS bibcode into an HTML report about the target paper
-and papers that cite it.
+The CLI and local browser app turn a target ADS bibcode into an HTML report
+about the target paper and papers that cite it.
 
 ```mermaid
 flowchart LR
     User[Target bibcode] --> CLI[src/cli.py]
+    BrowserUser[Browser user] --> App[src/app.py]
     CLI --> Workflow[src/workflow.py]
+    App --> Workflow
     Workflow --> ADS[ADS API]
     ADS --> Normalize[src/normalize.py]
     Normalize --> Workflow
@@ -24,20 +26,25 @@ flowchart LR
     OpenAI --> CitationSummary
     CitationSummary --> Workflow
     Workflow --> CLI
+    Workflow --> App
+    Workflow -. progress callback .-> App
     CLI --> Report[src/report.py]
+    App --> Report
     Report --> HTML[HTML report]
     CLI --> JSON[JSON data]
+    HTML --> BrowserReport[Browser report]
     JSON --> Viewer[templates/citation_report.html]
     Viewer --> View[Rendered JSON report]
-    Report ~~~ CLI
+    Report ~~~ Workflow
 ```
 
 ## Main steps
 
 1. **Read the input** — [`src/cli.py`](src/cli.py) accepts a target bibcode and
-   optional `--rows` limit (default: 10). It calls the workflow and saves HTML
-   and JSON files under `citation_reports/` in the current working directory,
-   creating the folder if needed.
+   optional `--rows` limit (default: 10). The local browser app in
+   [`src/app.py`](src/app.py) accepts the same inputs through a form. Both call
+   the workflow. The CLI saves HTML and JSON files under `citation_reports/`;
+   the browser app serves the current report from memory.
 2. **Retrieve and normalize the target** — [`src/workflow.py`](src/workflow.py)
    gets the target paper from ADS through [`src/ads.py`](src/ads.py) and
    converts it to a consistent record with [`src/normalize.py`](src/normalize.py).
@@ -72,15 +79,27 @@ flowchart LR
    the complete workflow results as JSON for use by other tools. Both files
    share the basename
    `citation_report_<encoded-bibcode>` and use `.html` and `.json` extensions;
-   their locations are printed.
+   their locations are printed. The browser app uses the same renderer and
+   serves the completed report at `/report`.
 7. **View a saved JSON report** — `templates/citation_report.html` renders a
    selected JSON file with its file picker. When served locally, it can also
    fetch the JSON by bibcode from `citation_reports/`.
 
 ## Run
 
-From the project root, set `ADS_API_TOKEN` and `OPENAI_API_KEY`, then run:
+From the project root, set `ADS_API_TOKEN` and `OPENAI_API_KEY`. To use the
+CLI, run:
 
 ```sh
 python3.12 -m src.cli "TARGET_BIBCODE"
 ```
+
+To use the local browser app, run:
+
+```sh
+python3.12 -m src.app
+```
+
+Then open `http://127.0.0.1:8000`. The app shows workflow progress and a link
+to the completed HTML report. Its result is kept in memory until another run
+starts or the app stops.

@@ -3,4 +3,5 @@ __pycache__/
 *.py[cod]
 *.html
 !templates/citation_report.html
+!templates/run_pipeline.html
 /citation_reports/

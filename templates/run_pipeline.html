@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Run citation agent</title>
+  <style>
+    body { max-width: 700px; margin: 3rem auto; padding: 0 1rem; font: 16px system-ui; }
+    form { display: grid; gap: 1rem; max-width: 28rem; }
+    label { display: grid; gap: .35rem; }
+    input, button { font: inherit; padding: .5rem; }
+    #status { min-height: 1.5em; }
+    #progress { padding-left: 1.5rem; }
+    button:disabled { opacity: .6; }
+  </style>
+</head>
+<body>
+  <h1>Run citation agent</h1>
+  <form id="run-form">
+    <label>Target bibcode
+      <input name="bibcode" required>
+    </label>
+    <label>Maximum citing papers
+      <input name="rows" type="number" min="1" value="10" required>
+    </label>
+    <button type="submit">Start run</button>
+  </form>
+  <p id="status" role="status" aria-live="polite"></p>
+  <p id="report-link"></p>
+  <h2>Progress</h2>
+  <ol id="progress" aria-live="polite"></ol>
+  <script>
+    const form = document.getElementById("run-form");
+    const status = document.getElementById("status");
+    const reportLink = document.getElementById("report-link");
+    const progress = document.getElementById("progress");
+    const startButton = form.querySelector("button");
+
+    async function pollStatus() {
+      try {
+        const response = await fetch("/status", { cache: "no-store" });
+        const data = await response.json();
+        for (const message of data.progress.slice(progress.children.length)) {
+          const item = document.createElement("li");
+          item.textContent = message;
+          progress.append(item);
+        }
+
+        if (data.running) {
+          startButton.disabled = true;
+          status.textContent = "Processing...";
+          window.setTimeout(pollStatus, 1000);
+        } else {
+          startButton.disabled = false;
+          if (data.error) {
+            status.textContent = `Run failed: ${data.error}`;
+          } else if (data.complete) {
+            status.textContent = "Run complete.";
+            const link = document.createElement("a");
+            link.href = "/report";
+            link.target = "_blank";
+            link.rel = "noopener";
+            link.textContent = "View citation report";
+            reportLink.replaceChildren(link);
+          } else {
+            status.textContent = "No run is active.";
+          }
+        }
+      } catch (error) {
+        startButton.disabled = false;
+        status.textContent = `Could not check progress: ${error.message}`;
+      }
+    }
+
+    form.addEventListener("submit", async event => {
+      event.preventDefault();
+      startButton.disabled = true;
+      progress.replaceChildren();
+      reportLink.replaceChildren();
+      status.textContent = "Starting run...";
+      try {
+        const response = await fetch("/run", {
+          method: "POST",
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          body: new URLSearchParams(new FormData(form)),
+        });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error);
+        status.textContent = data.message;
+        pollStatus();
+      } catch (error) {
+        startButton.disabled = false;
+        status.textContent = `Could not start run: ${error.message}`;
+      }
+    });
+
+    pollStatus();
+  </script>
+</body>
+</html>
