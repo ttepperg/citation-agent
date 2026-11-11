@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Citation report viewer</title>
-  <script defer src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-svg.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-svg.js"></script>
   <style>
     body {
       max-width: 800px;
@@ -69,6 +69,44 @@
       return element;
     }
 
+    const mathmlElements = new Set([
+      "math", "mrow", "mi", "mn", "mo", "ms", "mtext", "mspace",
+      "msup", "msub", "msubsup", "mfrac", "msqrt", "mroot", "mstyle",
+      "merror", "mpadded", "mphantom", "mfenced", "menclose", "mover",
+      "munder", "munderover", "mtable", "mtr", "mtd", "semantics",
+      "annotation",
+    ]);
+
+    function appendTitleNodes(parent, source) {
+      for (const node of source.childNodes) {
+        if (node.nodeType === Node.TEXT_NODE) {
+          parent.append(document.createTextNode(node.textContent));
+        } else if (node.nodeType === Node.ELEMENT_NODE) {
+          const name = node.localName.split(":").pop().toLowerCase();
+          if (name === "inline-formula") {
+            appendTitleNodes(parent, node);
+          } else if (mathmlElements.has(name)) {
+            const element = document.createElementNS(
+              "http://www.w3.org/1998/Math/MathML",
+              name,
+            );
+            appendTitleNodes(element, node);
+            parent.append(element);
+          } else {
+            appendTitleNodes(parent, node);
+          }
+        }
+      }
+    }
+
+    function addTitle(parent, title) {
+      const source = new DOMParser().parseFromString(
+        String(title ?? ""),
+        "text/html",
+      );
+      appendTitleNodes(parent, source.body);
+    }
+
     function addHighlightedText(parent, text, spans) {
       const source = String(text ?? "");
       let offset = 0;
@@ -95,12 +133,17 @@
     }
 
     function addAdsLink(parent, bibcode, title) {
-      if (!bibcode) return addText(parent, "span", title);
+      if (!bibcode) {
+        const span = document.createElement("span");
+        addTitle(span, title);
+        parent.append(span);
+        return span;
+      }
       const link = document.createElement("a");
       link.href = `https://ui.adsabs.harvard.edu/abs/${encodeURIComponent(bibcode)}`;
       link.target = "_blank";
       link.rel = "noopener";
-      link.textContent = title;
+      addTitle(link, title);
       parent.append(link);
       return link;
     }

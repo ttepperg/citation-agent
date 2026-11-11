@@ -68,6 +68,24 @@ def test_render_report_preserves_unicode_math_and_escapes_markup():
     assert "markup: &lt;tag&gt; &amp;." in html
 
 
+def test_render_report_converts_ads_mathml_title_to_safe_mathml():
+    title = (
+        "Hunting heavy decaying dark matter with Tibet "
+        "<inline-formula><mml:math><mml:msub><mml:mrow>"
+        "<mml:mi>AS</mml:mi></mml:mrow><mml:mi>γ</mml:mi>"
+        "</mml:msub></mml:math></inline-formula> and LHAASO-KM2A"
+    )
+
+    html = render_report(
+        {"bibcode": "TARGET", "title": title, "author": [], "year": "2026"},
+        [],
+    )
+
+    assert "Tibet <math xmlns=\"http://www.w3.org/1998/Math/MathML\">" in html
+    assert "<msub><mrow><mi>AS</mi></mrow><mi>γ</mi></msub></math>" in html
+    assert "</inline-formula>" not in html
+
+
 def test_render_report_highlights_target_citation_label():
     html = render_report(
         {"bibcode": "TARGET", "author": ["Target, A."], "year": "2025"},

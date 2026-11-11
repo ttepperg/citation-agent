@@ -2,7 +2,7 @@
 
 ## Urgent fixes
 
-1. [ ] Render ADS title MathML, such as the inline formula in `2026PhRvD.114b3023D`, instead of showing its markup literally.
+1. [x] Render ADS title MathML, such as the inline formula in `2026PhRvD.114b3023D`, instead of showing its markup literally.
 2. [x] Highlight only the target-linked citation marker; do not highlight matching digits elsewhere in passages or math.
 
 ## Browser UI
@@ -19,6 +19,8 @@
 10. [ ] Add 'save report' button
 11. [ ] Add 'stop run' button
 12. [ ] 'View citation report' redudant now tha report loads automatically on same page
+13. [ ] Bug: page reload clears bibcode field and resets row limit, but does not clear progress or report
+14. [ ] Add console.log() feedback for developers
 
 ## Other open tasks, in priority order
 

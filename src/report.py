@@ -2,9 +2,61 @@
 
 from datetime import datetime, timezone
 from html import escape
+from html.parser import HTMLParser
 from urllib.parse import quote
 
 from src.normalize import format_citation_label
+
+
+_MATHML_ELEMENTS = {
+    "math", "mrow", "mi", "mn", "mo", "ms", "mtext", "mspace",
+    "msup", "msub", "msubsup", "mfrac", "msqrt", "mroot", "mstyle",
+    "merror", "mpadded", "mphantom", "mfenced", "menclose", "mover",
+    "munder", "munderover", "mtable", "mtr", "mtd", "semantics",
+    "annotation",
+}
+
+
+class _TitleParser(HTMLParser):
+    def __init__(self):
+        super().__init__()
+        self.parts = []
+        self.formula_depth = 0
+        self.math_stack = []
+
+    def handle_starttag(self, tag, attrs):
+        name = tag.split(":")[-1]
+        if name == "inline-formula":
+            self.formula_depth += 1
+        elif self.formula_depth and name in _MATHML_ELEMENTS:
+            if name == "math":
+                self.parts.append(
+                    '<math xmlns="http://www.w3.org/1998/Math/MathML">'
+                )
+            else:
+                self.parts.append(f"<{name}>")
+            self.math_stack.append(name)
+        elif not self.formula_depth:
+            self.parts.append(escape(f"<{tag}>"))
+
+    def handle_endtag(self, tag):
+        name = tag.split(":")[-1]
+        if name == "inline-formula":
+            self.formula_depth -= 1
+        elif self.formula_depth and self.math_stack and name == self.math_stack[-1]:
+            self.math_stack.pop()
+            self.parts.append(f"</{name}>")
+        elif not self.formula_depth:
+            self.parts.append(escape(f"</{tag}>"))
+
+    def handle_data(self, data):
+        self.parts.append(escape(data))
+
+
+def _render_title(title):
+    parser = _TitleParser()
+    parser.feed(str(title or ""))
+    return "".join(parser.parts)
 
 
 def _render_passage(passage, target_citation_spans):
@@ -48,7 +100,9 @@ def _render_metadata(metadata):
 def render_report(target_record, results, target_summary=None):
     """Return an HTML page for workflow results."""
     target_bibcode = escape(target_record.get("bibcode") or "", quote=True)
-    target_title = escape(target_record.get("title") or "Untitled paper")
+    target_title = _render_title(
+        target_record.get("title") or "Untitled paper"
+    )
     target_citation = escape(format_citation_label(target_record))
     target_url = escape(
         "https://ui.adsabs.harvard.edu/abs/" +
@@ -67,7 +121,7 @@ def render_report(target_record, results, target_summary=None):
     cards = []
     for result in results:
         record = result["record"]
-        title = escape(record.get("title") or "Untitled paper")
+        title = _render_title(record.get("title") or "Untitled paper")
         bibcode = escape(record.get("bibcode") or "")
         paper_url = escape(
             "https://ui.adsabs.harvard.edu/abs/" +
@@ -104,7 +158,7 @@ def render_report(target_record, results, target_summary=None):
         f'<meta name="target-bibcode" content="{target_bibcode}">'
         "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">"
         "<title>Citation report</title>"
-        '<script defer src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-svg.js">'
+        '<script defer src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-svg.js">'
         "</script>"
         "<style>body{font:16px system-ui;max-width:800px;margin:2rem auto;"
         "padding:0 1rem;color:#20242a;background:#f5f7fa}"
