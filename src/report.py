@@ -3,6 +3,8 @@
 from datetime import datetime, timezone
 from html import escape
 from html.parser import HTMLParser
+import json
+from pathlib import Path
 from urllib.parse import quote
 
 from src.normalize import format_citation_label
@@ -177,3 +179,28 @@ def render_report(target_record, results, target_summary=None):
         "".join(cards) +
         "</body></html>"
     )
+
+
+def save_report(results):
+    """Save workflow results as HTML and JSON; return both file paths."""
+    filename = (
+        "citation_report_"
+        f"{quote(results['target']['bibcode'], safe='')}"
+    )
+    report_directory = Path.cwd() / "citation_reports"
+    report_directory.mkdir(exist_ok=True)
+
+    json_path = report_directory / f"{filename}.json"
+    json_path.write_text(
+        json.dumps(results, ensure_ascii=False, indent=2), encoding="utf-8"
+    )
+    html_path = report_directory / f"{filename}.html"
+    html_path.write_text(
+        render_report(
+            results["target"],
+            results["citing_papers"],
+            results["target_summary"],
+        ),
+        encoding="utf-8",
+    )
+    return html_path, json_path

@@ -16,16 +16,16 @@
 7. [x] Reset page whenever a new bibcode is entered
 8. [x] Display report on the same page.
 9. [ ] Animate 'Processing...' message; perhaps blink or fade-out/in?
-10. [ ] Add 'save report' button
+10. [x] Add 'save report' button
 11. [ ] Add 'stop run' button
-12. [ ] 'View citation report' redudant now tha report loads automatically on same page
+12. [x] Remove redundant 'View citation report' link now that report loads automatically on same page
 13. [ ] Bug: page reload clears bibcode field and resets row limit, but does not clear progress or report
 14. [ ] Add console.log() feedback for developers
 
 ## Other open tasks, in priority order
 
 1. [ ] Handle case where 0 citing papers are found; no need to write a report.
-2. [ ] Review pipeline structure based on Mermaid diagram in PIPELINE.md; can we simplify?
+2. [ ] Review pipeline structure based on Mermaid diagram in PIPELINE.md; can we simplify? For example, can src/app.py be refactored with FastAPI to a simpler architecture?
 3. [ ] Reconsider removing per-bibcode HTML reports: JSON plus the viewer avoids duplicate output, but standalone HTML is easy to share and open in any browser.
 4. [ ] Discuss whether the agent can be made platform-agnostic, i.e. use other LLMs.
 5. [ ] Consider using bold text instead of highlighting target citations in HTML passages.

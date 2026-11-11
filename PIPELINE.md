@@ -44,7 +44,8 @@ flowchart LR
    optional `--rows` limit (default: 10). The local browser app in
    [`src/app.py`](src/app.py) accepts the same inputs through a form. Both call
    the workflow. The CLI saves HTML and JSON files under `citation_reports/`;
-   the browser app serves the current report from memory.
+   the browser app serves the current report from memory and can save the same
+   files there when the user clicks **Save report**.
 2. **Retrieve and normalize the target** — [`src/workflow.py`](src/workflow.py)
    gets the target paper from ADS through [`src/ads.py`](src/ads.py) and
    converts it to a consistent record with [`src/normalize.py`](src/normalize.py).
@@ -79,8 +80,8 @@ flowchart LR
    the complete workflow results as JSON for use by other tools. Both files
    share the basename
    `citation_report_<encoded-bibcode>` and use `.html` and `.json` extensions;
-   their locations are printed. The browser app uses the same renderer and
-   serves the completed report at `/report`.
+   their locations are printed. The browser app uses the same renderer, serves
+   the completed report at `/report`, and can save HTML and JSON on request.
 7. **View a saved JSON report** — `templates/citation_report.html` renders a
    selected JSON file with its file picker. When served locally, it can also
    fetch the JSON by bibcode from `citation_reports/`.
@@ -100,6 +101,7 @@ To use the local browser app, run:
 python3.12 -m src.app
 ```
 
-Then open `http://127.0.0.1:8000`. The app shows workflow progress and a link
-to the completed HTML report. Its result is kept in memory until another run
-starts or the app stops.
+Then open `http://127.0.0.1:8000`. The app shows workflow progress and the
+completed HTML report. **Save report** stays visible and becomes enabled when
+the run completes; click it to write HTML and JSON files to `citation_reports/`.
+The result is kept in memory until another run starts or the app stops.

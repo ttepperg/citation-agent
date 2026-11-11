@@ -5,11 +5,8 @@ From the project root, set ADS_API_TOKEN and OPENAI_API_KEY, then run:
 """
 
 import argparse
-import json
-from pathlib import Path
-from urllib.parse import quote
 
-from src.report import render_report
+from src.report import save_report
 from src.workflow import summarize_citing_papers
 
 
@@ -23,27 +20,9 @@ def main():
 
     print(f"Processing papers citing {args.target_bibcode}...", flush=True)
     results = summarize_citing_papers(args.target_bibcode, rows=args.rows)
-    filename = f"citation_report_{quote(args.target_bibcode, safe='')}"
-    report_directory = Path.cwd() / "citation_reports"
-    report_directory.mkdir(exist_ok=True)
-    json_path = report_directory / f"{filename}.json"
-    print("Saving JSON data...", flush=True)
-    json_path.write_text(
-        json.dumps(results, ensure_ascii=False, indent=2),
-        encoding="utf-8",
-    )
+    print("Saving HTML and JSON reports...", flush=True)
+    report_path, json_path = save_report(results)
     print(f"Saved JSON data to {json_path}")
-
-    report_path = report_directory / f"{filename}.html"
-    print("Rendering HTML report...", flush=True)
-    report_path.write_text(
-        render_report(
-            results["target"],
-            results["citing_papers"],
-            results["target_summary"],
-        ),
-        encoding="utf-8",
-    )
     print(f"Saved HTML report to {report_path}")
     print("Open this file in a web browser to view it.")
 

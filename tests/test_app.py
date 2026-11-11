@@ -11,7 +11,8 @@ from urllib.request import Request, urlopen
 from src import app
 
 
-def test_app_runs_workflow_and_serves_report(monkeypatch):
+def test_app_runs_workflow_and_saves_report(monkeypatch, tmp_path):
+    monkeypatch.chdir(tmp_path)
     results = {
         "target": {
             "bibcode": "TARGET",
@@ -51,6 +52,12 @@ def test_app_runs_workflow_and_serves_report(monkeypatch):
             assert error.code == 404
         else:
             raise AssertionError("Report route should be unavailable before a run")
+        try:
+            urlopen(Request(f"{base_url}/save", data=b""))
+        except HTTPError as error:
+            assert error.code == 409
+        else:
+            raise AssertionError("Save route should be unavailable before a run")
 
         request = Request(
             f"{base_url}/run",
@@ -80,6 +87,24 @@ def test_app_runs_workflow_and_serves_report(monkeypatch):
         with urlopen(f"{base_url}/report") as response:
             assert response.status == 200
             assert "Target paper" in response.read().decode("utf-8")
+
+        request = Request(f"{base_url}/save", data=b"")
+        with urlopen(request) as response:
+            saved = json.load(response)
+        assert saved == {
+            "html_path": str(
+                tmp_path / "citation_reports" / "citation_report_TARGET.html"
+            ),
+            "json_path": str(
+                tmp_path / "citation_reports" / "citation_report_TARGET.json"
+            ),
+        }
+        saved_html = tmp_path / "citation_reports" / "citation_report_TARGET.html"
+        assert "Target paper" in saved_html.read_text(encoding="utf-8")
+        assert json.loads(
+            (tmp_path / "citation_reports" / "citation_report_TARGET.json")
+            .read_text(encoding="utf-8")
+        ) == results
     finally:
         server.shutdown()
         server_thread.join()

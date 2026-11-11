@@ -47,13 +47,11 @@ def test_main_saves_report_in_citation_reports(monkeypatch, tmp_path):
         "summarize_citing_papers",
         lambda bibcode, rows: results,
     )
-    monkeypatch.setattr(cli, "render_report", lambda *args: "report html")
-
     cli.main()
 
     report_directory = tmp_path / "citation_reports"
     report_path = report_directory / "citation_report_2025A%26A...695A.193P.html"
-    assert report_path.read_text(encoding="utf-8") == "report html"
+    assert "Café" in report_path.read_text(encoding="utf-8")
 
     json_path = report_directory / "citation_report_2025A%26A...695A.193P.json"
     json_text = json_path.read_text(encoding="utf-8")

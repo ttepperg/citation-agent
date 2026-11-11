@@ -10,7 +10,7 @@ from pathlib import Path
 from threading import Lock, Thread
 from urllib.parse import parse_qs
 
-from src.report import render_report
+from src.report import render_report, save_report
 from src.workflow import summarize_citing_papers
 
 
@@ -84,6 +84,23 @@ class AppHandler(BaseHTTPRequestHandler):
             self.send_error(404)
 
     def do_POST(self):
+        if self.path == "/save":
+            with state_lock:
+                result = run_state["result"]
+            if result is None:
+                self.send_json(409, {"error": "There is no report to save."})
+                return
+            try:
+                html_path, json_path = save_report(result)
+            except Exception as exc:
+                self.send_json(500, {"error": f"Could not save report: {exc}"})
+                return
+            self.send_json(200, {
+                "html_path": str(html_path),
+                "json_path": str(json_path),
+            })
+            return
+
         if self.path != "/run":
             self.send_error(404)
             return

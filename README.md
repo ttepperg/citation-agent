@@ -60,9 +60,11 @@ python3.12 -m src.app
 
 Open `http://127.0.0.1:8000`, enter a target bibcode and the maximum number of
 citing papers to process (default: 10), then click **Start run**. The page
-shows progress and provides a link to the completed HTML report. The browser
-app keeps the current result in memory; it is replaced by the next run and is
-lost when the app stops. Use the CLI to save HTML and JSON report files.
+shows progress and displays the completed HTML report. Click **Save report**
+to save both HTML and JSON files under `citation_reports/`, using the same
+encoded-bibcode filenames as the CLI. The button remains visible and becomes
+enabled when the run completes. The browser app keeps the current result in
+memory until another run starts or the app stops.
 
 ## Scope and data use
 
