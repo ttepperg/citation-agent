@@ -52,18 +52,25 @@
     const progress = document.getElementById("progress");
     const reportFrame = document.getElementById("report-frame");
     const startButton = form.querySelector("button");
+    const debugPrefix = "[debug] ";
     let stopRequested = false;
+    let receivedProgressCount = 0;
 
     async function pollStatus() {
       try {
         const response = await fetch("/status", { cache: "no-store" });
         const data = await response.json();
-        if (!stopRequested && !data.stopping) {
-          for (const message of data.progress.slice(progress.children.length)) {
+        const messages = data.progress.slice(receivedProgressCount);
+        receivedProgressCount = data.progress.length;
+        for (const message of messages) {
+          if (message.startsWith(debugPrefix)) {
+            if (!stopRequested && !data.stopping) {
+              console.log(`[citation-agent] ${message.slice(debugPrefix.length)}`);
+            }
+          } else if (!stopRequested && !data.stopping) {
             const item = document.createElement("li");
             item.textContent = message;
             progress.append(item);
-            console.log(`[citation-agent] ${message}`);
           }
         }
 
@@ -119,6 +126,7 @@
         rows: form.elements.rows.value,
       });
       stopRequested = false;
+      receivedProgressCount = 0;
       status.classList.remove("processing");
       progress.replaceChildren();
       saveButton.disabled = true;
@@ -149,6 +157,7 @@
     stopButton.addEventListener("click", async () => {
       stopRequested = true;
       stopButton.disabled = true;
+      receivedProgressCount = 0;
       progress.replaceChildren();
       saveButton.disabled = true;
       saveStatus.textContent = "";
@@ -196,6 +205,7 @@
       saveButton.disabled = true;
       saveStatus.textContent = "";
       progress.replaceChildren();
+      receivedProgressCount = 0;
       reportFrame.hidden = true;
       reportFrame.src = "about:blank";
     });

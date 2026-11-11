@@ -23,7 +23,7 @@ def summarize_citing_papers(
         raise LookupError(f"ADS did not find {target_bibcode}")
     target_record = normalise_record(target)
     if target_record.get("abstract"):
-        report_progress("Sending target summary request to the LLM...")
+        report_progress("[debug] Sending target summary request to the LLM...")
     target_summary = summarize_target_paper(target_record, api_key)
 
     citing_papers, total_citing_papers = get_citing_papers(
@@ -44,7 +44,7 @@ def summarize_citing_papers(
         passages = passage_details["passages"]
         if passages:
             report_progress(
-                f"Sending citation summary request to the LLM for "
+                f"[debug] Sending citation summary request to the LLM for "
                 f"{record['bibcode']}..."
             )
             summary_result = summarize_paper(

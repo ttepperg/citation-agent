@@ -66,7 +66,7 @@ def test_summarize_citing_papers_reports_progress_and_keeps_summary_metadata(
         "Fetching target record TARGET from ADS...",
         "ADS found 17 citing papers; processing 1 (limit: 1).",
         "Processing citing paper 1/1: CITING",
-        "Sending citation summary request to the LLM for CITING...",
+        "[debug] Sending citation summary request to the LLM for CITING...",
     ]
 
 
