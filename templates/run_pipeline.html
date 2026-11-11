@@ -16,6 +16,7 @@
     }
     #save-status { white-space: pre-line; }
     #progress { padding-left: 1.5rem; }
+    #progress .warning { color: #c62828; font-weight: 600; }
     button:disabled { opacity: .6; }
     #report-frame { width: 100%; height: 75vh; margin-top: 1rem; border: 0; }
     @keyframes pulse { 50% { opacity: .4; } }
@@ -70,6 +71,9 @@
           } else if (!stopRequested && !data.stopping) {
             const item = document.createElement("li");
             item.textContent = message;
+            if (message.startsWith("ADS found 0 citing papers;")) {
+              item.classList.add("warning");
+            }
             progress.append(item);
           }
         }

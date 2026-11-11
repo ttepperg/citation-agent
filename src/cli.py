@@ -25,6 +25,12 @@ def main():
     print(f"Saved JSON data to {json_path}")
     print(f"Saved HTML report to {report_path}")
     print("Open this file in a web browser to view it.")
+    if not results["citing_papers"]:
+        print(
+            "\nNOTE: No citing-paper cards will appear!\n"
+            "The report contains the target paper summary only.\n",
+            flush=True,
+        )
 
 
 if __name__ == "__main__":

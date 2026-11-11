@@ -24,7 +24,7 @@
 
 ## Other open tasks, in priority order
 
-1. [ ] Handle case where 0 citing papers are found; no need to write a report.
+1. [x] Make zero citing papers clear in the UI and CLI; retain the target summary and omit citing-paper cards.
 2. [ ] Review pipeline structure based on Mermaid diagram in PIPELINE.md; can we simplify? For example, can src/app.py be refactored with FastAPI to a simpler architecture?
 3. [ ] Reconsider removing per-bibcode HTML reports: JSON plus the viewer avoids duplicate output, but standalone HTML is easy to share and open in any browser.
 4. [ ] Discuss whether the agent can be made platform-agnostic, i.e. use other LLMs.
