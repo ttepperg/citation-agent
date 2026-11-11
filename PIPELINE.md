@@ -104,4 +104,8 @@ python3.12 -m src.app
 Then open `http://127.0.0.1:8000`. The app shows workflow progress and the
 completed HTML report. **Save report** stays visible and becomes enabled when
 the run completes; click it to write HTML and JSON files to `citation_reports/`.
-The result is kept in memory until another run starts or the app stops.
+While a run is active, **Stop and clear** removes displayed progress and the
+report, then requests cancellation. The current ADS or OpenAI request must
+finish before the workflow stops. Reloading the page also requests cancellation
+and clears the server-side run state. Otherwise, results stay in memory until
+another run starts or the app stops.

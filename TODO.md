@@ -12,14 +12,14 @@
 3. [x] Add a local web server with a form for the target bibcode and row limit; run the existing workflow in the background.
 4. [x] Show live progress in the page by polling the server.
 5. [x] Display the completed report or links to its saved HTML and JSON files.
-6. [ ] Check the browser flow locally, then run a live ADS check manually.
+6. [x] Check the browser flow locally, then run a live ADS check manually.
 7. [x] Reset page whenever a new bibcode is entered
 8. [x] Display report on the same page.
-9. [ ] Animate 'Processing...' message; perhaps blink or fade-out/in?
+9. [x] Animate 'Processing...' message with a subtle pulse.
 10. [x] Add 'save report' button
-11. [ ] Add 'stop run' button
+11. [x] Add a Stop and clear button for an active run.
 12. [x] Remove redundant 'View citation report' link now that report loads automatically on same page
-13. [ ] Bug: page reload clears bibcode field and resets row limit, but does not clear progress or report
+13. [x] Clear server-side run state on page reload so it matches the reset UI.
 14. [ ] Add console.log() feedback for developers
 
 ## Other open tasks, in priority order

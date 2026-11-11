@@ -64,7 +64,11 @@ shows progress and displays the completed HTML report. Click **Save report**
 to save both HTML and JSON files under `citation_reports/`, using the same
 encoded-bibcode filenames as the CLI. The button remains visible and becomes
 enabled when the run completes. The browser app keeps the current result in
-memory until another run starts or the app stops.
+memory until another run starts, the page reloads, or the app stops. While a
+run is active, **Stop and clear** clears the displayed progress and report and
+requests cancellation. An in-progress ADS or OpenAI request must finish before
+the workflow stops; reloading the page also requests cancellation and clears
+the server-side run state.
 
 ## Scope and data use
 

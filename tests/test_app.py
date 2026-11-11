@@ -80,6 +80,8 @@ def test_app_runs_workflow_and_saves_report(monkeypatch, tmp_path):
         assert calls == [("TARGET", 3)]
         assert status == {
             "running": False,
+            "stopping": False,
+            "stopped": False,
             "progress": ["Fetched target record."],
             "complete": True,
             "error": None,

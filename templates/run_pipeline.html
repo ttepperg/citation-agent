@@ -10,10 +10,18 @@
     label { display: grid; gap: .35rem; }
     input, button { font: inherit; padding: .5rem; }
     #status { min-height: 1.5em; }
+    #status.processing {
+      color: #c62828;
+      animation: pulse 1.3s ease-in-out infinite;
+    }
     #save-status { white-space: pre-line; }
     #progress { padding-left: 1.5rem; }
     button:disabled { opacity: .6; }
     #report-frame { width: 100%; height: 75vh; margin-top: 1rem; border: 0; }
+    @keyframes pulse { 50% { opacity: .4; } }
+    @media (prefers-reduced-motion: reduce) {
+      #status.processing { animation: none; }
+    }
   </style>
 </head>
 <body>
@@ -26,6 +34,7 @@
       <input name="rows" type="number" min="1" value="10" required>
     </label>
     <button type="submit">Start run</button>
+    <button id="stop-button" type="button" hidden>Stop and clear</button>
   </form>
   <p id="status" role="status" aria-live="polite"></p>
   <button id="save-button" type="button" disabled>Save report</button>
@@ -37,30 +46,42 @@
     const form = document.getElementById("run-form");
     const bibcodeInput = form.elements.bibcode;
     const status = document.getElementById("status");
+    const stopButton = document.getElementById("stop-button");
     const saveButton = document.getElementById("save-button");
     const saveStatus = document.getElementById("save-status");
     const progress = document.getElementById("progress");
     const reportFrame = document.getElementById("report-frame");
     const startButton = form.querySelector("button");
+    let stopRequested = false;
 
     async function pollStatus() {
       try {
         const response = await fetch("/status", { cache: "no-store" });
         const data = await response.json();
-        for (const message of data.progress.slice(progress.children.length)) {
-          const item = document.createElement("li");
-          item.textContent = message;
-          progress.append(item);
+        if (!stopRequested && !data.stopping) {
+          for (const message of data.progress.slice(progress.children.length)) {
+            const item = document.createElement("li");
+            item.textContent = message;
+            progress.append(item);
+          }
         }
 
         if (data.running) {
           startButton.disabled = true;
           bibcodeInput.disabled = true;
-          status.textContent = "Processing...";
+          stopButton.hidden = false;
+          stopButton.disabled = data.stopping;
+          status.classList.toggle("processing", !data.stopping);
+          status.textContent = data.stopping
+            ? "Stopping after the current request..."
+            : "Processing...";
           window.setTimeout(pollStatus, 1000);
         } else {
           startButton.disabled = false;
           bibcodeInput.disabled = false;
+          stopButton.hidden = true;
+          stopButton.disabled = false;
+          status.classList.remove("processing");
           if (data.error) {
             status.textContent = `Run failed: ${data.error}`;
           } else if (data.complete) {
@@ -68,12 +89,17 @@
             reportFrame.src = "/report";
             reportFrame.hidden = false;
             saveButton.disabled = false;
+          } else if (data.stopped || stopRequested) {
+            status.textContent = "Run stopped and cleared.";
+            stopRequested = false;
           } else {
             status.textContent = "No run is active.";
           }
         }
       } catch (error) {
         startButton.disabled = false;
+        stopButton.hidden = true;
+        status.classList.remove("processing");
         status.textContent = `Could not check progress: ${error.message}`;
       }
     }
@@ -83,6 +109,8 @@
       const body = new URLSearchParams(new FormData(form));
       startButton.disabled = true;
       bibcodeInput.disabled = true;
+      stopRequested = false;
+      status.classList.remove("processing");
       progress.replaceChildren();
       saveButton.disabled = true;
       saveStatus.textContent = "";
@@ -102,7 +130,29 @@
       } catch (error) {
         startButton.disabled = false;
         bibcodeInput.disabled = false;
+        stopButton.hidden = true;
         status.textContent = `Could not start run: ${error.message}`;
+      }
+    });
+
+    stopButton.addEventListener("click", async () => {
+      stopRequested = true;
+      stopButton.disabled = true;
+      progress.replaceChildren();
+      saveButton.disabled = true;
+      saveStatus.textContent = "";
+      reportFrame.hidden = true;
+      reportFrame.src = "about:blank";
+      status.classList.remove("processing");
+      status.textContent = "Stopping after the current request...";
+      try {
+        const response = await fetch("/stop", { method: "POST" });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error);
+        pollStatus();
+      } catch (error) {
+        stopButton.disabled = false;
+        status.textContent = `Could not stop run: ${error.message}`;
       }
     });
 
@@ -124,6 +174,7 @@
 
     bibcodeInput.addEventListener("input", () => {
       status.textContent = "";
+      status.classList.remove("processing");
       saveButton.disabled = true;
       saveStatus.textContent = "";
       progress.replaceChildren();

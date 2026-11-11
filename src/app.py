@@ -7,7 +7,7 @@ From the project root, set ADS_API_TOKEN and OPENAI_API_KEY, then run:
 import json
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from pathlib import Path
-from threading import Lock, Thread
+from threading import Event, Lock, Thread
 from urllib.parse import parse_qs
 
 from src.report import render_report, save_report
@@ -19,27 +19,82 @@ FORM_PATH = (
     / "templates"
     / "run_pipeline.html"
 )
-run_state = {"running": False, "progress": [], "result": None, "error": None}
+run_state = {
+    "running": False,
+    "stopping": False,
+    "stopped": False,
+    "progress": [],
+    "result": None,
+    "error": None,
+    "stop_event": None,
+}
 state_lock = Lock()
 
 
-def run_pipeline(bibcode, rows):
+class RunCancelled(Exception):
+    """Stop the workflow at its next progress callback."""
+
+
+def run_pipeline(bibcode, rows, stop_event):
     def record_progress(message):
         with state_lock:
+            if stop_event.is_set():
+                raise RunCancelled
             run_state["progress"].append(message)
 
     try:
         result = summarize_citing_papers(
             bibcode, rows=rows, progress_callback=record_progress
         )
+        error = None
+    except RunCancelled:
+        result = None
+        error = None
     except Exception as exc:
-        with state_lock:
-            run_state["error"] = str(exc)
-            run_state["running"] = False
-    else:
-        with state_lock:
-            run_state["result"] = result
-            run_state["running"] = False
+        result = None
+        error = str(exc)
+
+    with state_lock:
+        if stop_event.is_set():
+            run_state.update({
+                "running": False,
+                "stopping": False,
+                "stopped": True,
+                "progress": [],
+                "result": None,
+                "error": None,
+                "stop_event": None,
+            })
+        else:
+            run_state.update({
+                "running": False,
+                "stopping": False,
+                "stopped": False,
+                "result": result,
+                "error": error,
+                "stop_event": None,
+            })
+
+
+def stop_run():
+    with state_lock:
+        if run_state["running"]:
+            run_state["stop_event"].set()
+            run_state.update({
+                "stopping": True,
+                "progress": [],
+                "result": None,
+                "error": None,
+            })
+            return True
+        run_state.update({
+            "stopping": False,
+            "stopped": False,
+            "progress": [],
+            "result": None,
+            "error": None,
+        })
+        return False
 
 
 class AppHandler(BaseHTTPRequestHandler):
@@ -60,6 +115,7 @@ class AppHandler(BaseHTTPRequestHandler):
 
     def do_GET(self):
         if self.path == "/":
+            stop_run()
             self.send_html(FORM_PATH.read_bytes())
         elif self.path == "/report":
             with state_lock:
@@ -75,6 +131,8 @@ class AppHandler(BaseHTTPRequestHandler):
             with state_lock:
                 status = {
                     "running": run_state["running"],
+                    "stopping": run_state["stopping"],
+                    "stopped": run_state["stopped"],
                     "progress": list(run_state["progress"]),
                     "complete": run_state["result"] is not None,
                     "error": run_state["error"],
@@ -84,6 +142,13 @@ class AppHandler(BaseHTTPRequestHandler):
             self.send_error(404)
 
     def do_POST(self):
+        if self.path == "/stop":
+            stopping = stop_run()
+            self.send_json(202 if stopping else 200, {
+                "message": "Stop requested." if stopping else "No run is active."
+            })
+            return
+
         if self.path == "/save":
             with state_lock:
                 result = run_state["result"]
@@ -117,18 +182,24 @@ class AppHandler(BaseHTTPRequestHandler):
             self.send_json(400, {"error": "Enter a bibcode and a positive row limit."})
             return
 
+        stop_event = Event()
         with state_lock:
             if run_state["running"]:
                 self.send_json(409, {"error": "A run is already in progress."})
                 return
             run_state.update({
                 "running": True,
+                "stopping": False,
+                "stopped": False,
                 "progress": [],
                 "result": None,
                 "error": None,
+                "stop_event": stop_event,
             })
 
-        Thread(target=run_pipeline, args=(bibcode, rows), daemon=True).start()
+        Thread(
+            target=run_pipeline, args=(bibcode, rows, stop_event), daemon=True
+        ).start()
         self.send_json(202, {"message": "Run started."})
 
 
