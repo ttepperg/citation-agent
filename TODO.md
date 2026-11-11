@@ -8,10 +8,11 @@
 4. [x] Show live progress in the page by polling the server.
 5. [x] Display the completed report or links to its saved HTML and JSON files.
 6. [ ] Check the browser flow locally, then run a live ADS check manually.
-7. [ ] Reset page whenever a new bibcode is entered
+7. [x] Reset page whenever a new bibcode is entered
 8. [ ] Display report on the same page?
 9. [ ] Animate 'Processing...' message; perhaps blink or fade-out/in?
-10.[ ] Add 'save report' button
+10. [ ] Add 'save report' button
+11. [ ] Add 'stop run' button
 
 ## Other open tasks, in priority order
 

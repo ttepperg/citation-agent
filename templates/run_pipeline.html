@@ -31,6 +31,7 @@
   <ol id="progress" aria-live="polite"></ol>
   <script>
     const form = document.getElementById("run-form");
+    const bibcodeInput = form.elements.bibcode;
     const status = document.getElementById("status");
     const reportLink = document.getElementById("report-link");
     const progress = document.getElementById("progress");
@@ -48,10 +49,12 @@
 
         if (data.running) {
           startButton.disabled = true;
+          bibcodeInput.disabled = true;
           status.textContent = "Processing...";
           window.setTimeout(pollStatus, 1000);
         } else {
           startButton.disabled = false;
+          bibcodeInput.disabled = false;
           if (data.error) {
             status.textContent = `Run failed: ${data.error}`;
           } else if (data.complete) {
@@ -74,7 +77,9 @@
 
     form.addEventListener("submit", async event => {
       event.preventDefault();
+      const body = new URLSearchParams(new FormData(form));
       startButton.disabled = true;
+      bibcodeInput.disabled = true;
       progress.replaceChildren();
       reportLink.replaceChildren();
       status.textContent = "Starting run...";
@@ -82,7 +87,7 @@
         const response = await fetch("/run", {
           method: "POST",
           headers: { "Content-Type": "application/x-www-form-urlencoded" },
-          body: new URLSearchParams(new FormData(form)),
+          body,
         });
         const data = await response.json();
         if (!response.ok) throw new Error(data.error);
@@ -90,8 +95,15 @@
         pollStatus();
       } catch (error) {
         startButton.disabled = false;
+        bibcodeInput.disabled = false;
         status.textContent = `Could not start run: ${error.message}`;
       }
+    });
+
+    bibcodeInput.addEventListener("input", () => {
+      status.textContent = "";
+      reportLink.replaceChildren();
+      progress.replaceChildren();
     });
 
     pollStatus();
