@@ -6,8 +6,18 @@ from src.passages import get_citation_passage_details
 from src.summarize import summarize_paper, summarize_target_paper
 
 
-def summarize_citing_papers(target_bibcode, token=None, rows=10, api_key=None):
-    """Return the normalized target and its citing-paper results."""
+def summarize_citing_papers(
+    target_bibcode, token=None, rows=10, api_key=None, progress_callback=None
+):
+    """Return citing-paper results and send progress to a callback or stdout."""
+
+    def report_progress(message):
+        if progress_callback is None:
+            print(message, flush=True)
+        else:
+            progress_callback(message)
+
+    report_progress(f"Fetching target record {target_bibcode} from ADS...")
     target = get_paper(target_bibcode, token)
     if target is None:
         raise LookupError(f"ADS did not find {target_bibcode}")
@@ -17,17 +27,15 @@ def summarize_citing_papers(target_bibcode, token=None, rows=10, api_key=None):
     citing_papers, total_citing_papers = get_citing_papers(
         target_bibcode, token, rows
     )
-    print(
+    report_progress(
         f"ADS found {total_citing_papers} citing papers; "
-        f"processing {len(citing_papers)} (limit: {rows}).",
-        flush=True,
+        f"processing {len(citing_papers)} (limit: {rows})."
     )
     results = []
     for index, paper in enumerate(citing_papers, 1):
-        print(
+        report_progress(
             f"Processing citing paper {index}/{len(citing_papers)}: "
-            f"{paper['bibcode']}",
-            flush=True,
+            f"{paper['bibcode']}"
         )
         record = normalise_record(paper)
         passage_details = get_citation_passage_details(target, paper, token)

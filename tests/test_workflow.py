@@ -9,8 +9,8 @@ from unittest.mock import Mock
 from src import workflow
 
 
-def test_summarize_citing_papers_reports_total_and_keeps_summary_metadata(
-    monkeypatch, capsys
+def test_summarize_citing_papers_reports_progress_and_keeps_summary_metadata(
+    monkeypatch,
 ):
     target = {
         "bibcode": "TARGET",
@@ -47,8 +47,10 @@ def test_summarize_citing_papers_reports_total_and_keeps_summary_metadata(
         },
     )
 
+    progress_messages = []
     result = workflow.summarize_citing_papers(
-        "TARGET", token="ads-token", rows=1, api_key="openai-key"
+        "TARGET", token="ads-token", rows=1, api_key="openai-key",
+        progress_callback=progress_messages.append,
     )
 
     assert result["citing_papers"] == [{
@@ -58,13 +60,16 @@ def test_summarize_citing_papers_reports_total_and_keeps_summary_metadata(
         "summary": "It provides a baseline.",
         "summary_metadata": metadata,
     }]
-    assert (
-        "ADS found 17 citing papers; processing 1 (limit: 1)."
-        in capsys.readouterr().out
-    )
+    assert progress_messages == [
+        "Fetching target record TARGET from ADS...",
+        "ADS found 17 citing papers; processing 1 (limit: 1).",
+        "Processing citing paper 1/1: CITING",
+    ]
 
 
-def test_summarize_citing_papers_skips_llm_when_no_passages(monkeypatch):
+def test_summarize_citing_papers_prints_progress_by_default(
+    monkeypatch, capsys
+):
     target = {
         "bibcode": "TARGET",
         "title": "Target paper",
@@ -92,6 +97,11 @@ def test_summarize_citing_papers_skips_llm_when_no_passages(monkeypatch):
     result = workflow.summarize_citing_papers("TARGET")
 
     summarize.assert_not_called()
+    assert capsys.readouterr().out.splitlines() == [
+        "Fetching target record TARGET from ADS...",
+        "ADS found 1 citing papers; processing 1 (limit: 10).",
+        "Processing citing paper 1/1: CITING",
+    ]
     assert result["citing_papers"] == [{
         "record": citing,
         "passages": [],

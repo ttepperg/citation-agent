@@ -1,12 +1,20 @@
 # To do
 
-## Open tasks, in priority order
+## Browser UI
 
-1. [ ] Discuss whether users should be able to run the pipeline through a browser UI.
-2. [ ] Review pipeline structure based on Mermaid diagram in PIPELINE.md; can we simplify?
-3. [ ] Reconsider removing per-bibcode HTML reports: JSON plus the viewer avoids duplicate output, but standalone HTML is easy to share and open in any browser.
-4. [ ] Discuss whether the agente can be made platform-agnostic, i.e. use other LLMs
-5. [ ] Consider using bold text instead of highlighting target citations in HTML passages.
+1. [x] Let `workflow.py` send progress messages through a callback while preserving CLI output.
+2. [x] Add an early progress message before the workflow's slow initial steps.
+3. [ ] Add a local web server with a form for the target bibcode and row limit; run the existing workflow in the background.
+4. [ ] Show live progress in the page by polling the server.
+5. [ ] Display the completed report or links to its saved HTML and JSON files.
+6. [ ] Check the browser flow locally, then run a live ADS check manually.
+
+## Other open tasks, in priority order
+
+1. [ ] Review pipeline structure based on Mermaid diagram in PIPELINE.md; can we simplify?
+2. [ ] Reconsider removing per-bibcode HTML reports: JSON plus the viewer avoids duplicate output, but standalone HTML is easy to share and open in any browser.
+3. [ ] Discuss whether the agent can be made platform-agnostic, i.e. use other LLMs.
+4. [ ] Consider using bold text instead of highlighting target citations in HTML passages.
 
 ## Completed
 
