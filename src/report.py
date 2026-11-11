@@ -7,20 +7,20 @@ from urllib.parse import quote
 from src.normalize import format_citation_label
 
 
-def _render_passage(passage, target_citation_labels):
-    passage_html = escape(passage)
-    labels = sorted(
-        (str(label) for label in target_citation_labels if label),
-        key=len,
-        reverse=True,
-    )
-    for label in labels:
-        safe_label = escape(label)
-        passage_html = passage_html.replace(
-            safe_label,
-            f'<mark class="target-citation">{safe_label}</mark>',
+def _render_passage(passage, target_citation_spans):
+    parts = []
+    position = 0
+    for start, end in sorted(target_citation_spans or []):
+        if start < position or end > len(passage):
+            continue
+        parts.append(escape(passage[position:start]))
+        parts.append(
+            '<mark class="target-citation">'
+            f"{escape(passage[start:end])}</mark>"
         )
-    return passage_html
+        position = end
+    parts.append(escape(passage[position:]))
+    return "".join(parts)
 
 
 def _render_metadata(metadata):
@@ -77,11 +77,17 @@ def render_report(target_record, results, target_summary=None):
         year = escape(str(record.get("year") or "Year unknown"))
         summary = escape(result.get("summary") or "No summary available.")
         metadata_note = _render_metadata(result.get("summary_metadata"))
-        target_citation_labels = result.get("target_citation_labels") or []
-        passages = "".join(
-            f"<li>{_render_passage(passage, target_citation_labels)}</li>"
-            for passage in result["passages"]
-        ) or "<li>No citation passages found.</li>"
+        target_citation_spans = result.get("target_citation_spans") or []
+        passage_items = []
+        for index, passage in enumerate(result["passages"]):
+            spans = (
+                target_citation_spans[index]
+                if index < len(target_citation_spans) else []
+            )
+            passage_items.append(
+                f"<li>{_render_passage(passage, spans)}</li>"
+            )
+        passages = "".join(passage_items) or "<li>No citation passages found.</li>"
         cards.append(
             f'<article><h2><a href="{paper_url}" target="_blank" '
             f'rel="noopener">{title}</a> '

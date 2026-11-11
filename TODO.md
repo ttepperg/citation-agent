@@ -1,5 +1,10 @@
 # To do
 
+## Urgent fixes
+
+1. [ ] Render ADS title MathML, such as the inline formula in `2026PhRvD.114b3023D`, instead of showing its markup literally.
+2. [x] Highlight only the target-linked citation marker; do not highlight matching digits elsewhere in passages or math.
+
 ## Browser UI
 
 1. [x] Let `workflow.py` send progress messages through a callback while preserving CLI output.
@@ -9,10 +14,11 @@
 5. [x] Display the completed report or links to its saved HTML and JSON files.
 6. [ ] Check the browser flow locally, then run a live ADS check manually.
 7. [x] Reset page whenever a new bibcode is entered
-8. [ ] Display report on the same page?
+8. [x] Display report on the same page.
 9. [ ] Animate 'Processing...' message; perhaps blink or fade-out/in?
 10. [ ] Add 'save report' button
 11. [ ] Add 'stop run' button
+12. [ ] 'View citation report' redudant now tha report loads automatically on same page
 
 ## Other open tasks, in priority order
 

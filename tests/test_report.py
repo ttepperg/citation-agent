@@ -75,6 +75,7 @@ def test_render_report_highlights_target_citation_label():
             "record": {"bibcode": "CITING"},
             "passages": ["Previous simulations [56] and [57] show this."],
             "target_citation_labels": ["[56]"],
+            "target_citation_spans": [[[21, 25]]],
             "summary": "It compares the simulations.",
         }],
     )
@@ -83,3 +84,21 @@ def test_render_report_highlights_target_citation_label():
         "Previous simulations <mark class=\"target-citation\">[56]</mark> "
         "and [57] show this."
     ) in html
+
+
+def test_render_report_does_not_highlight_matching_digits_in_math():
+    passage = r"\(\sigma_{\log_{10}J}\) (see Refs. [27, 1])"
+    target_index = passage.rindex("1")
+    html = render_report(
+        {"bibcode": "TARGET", "author": [], "year": "2025"},
+        [{
+            "record": {"bibcode": "CITING"},
+            "passages": [passage],
+            "target_citation_spans": [[[target_index, target_index + 1]]],
+            "summary": "It cites the target.",
+        }],
+    )
+
+    assert r"\log_{10}J" in html
+    assert "Refs. [27, <mark class=\"target-citation\">1</mark>]" in html
+    assert html.count('<mark class="target-citation">') == 1

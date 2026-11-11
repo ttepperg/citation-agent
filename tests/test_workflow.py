@@ -37,6 +37,7 @@ def test_summarize_citing_papers_reports_progress_and_keeps_summary_metadata(
         lambda target_record, paper, token: {
             "passages": ["The target is used as a baseline."],
             "target_citation_labels": ["[56]"],
+            "target_citation_spans": [],
         },
     )
     monkeypatch.setattr(
@@ -57,6 +58,7 @@ def test_summarize_citing_papers_reports_progress_and_keeps_summary_metadata(
         "record": citing,
         "passages": ["The target is used as a baseline."],
         "target_citation_labels": ["[56]"],
+        "target_citation_spans": [],
         "summary": "It provides a baseline.",
         "summary_metadata": metadata,
     }]
@@ -90,7 +92,11 @@ def test_summarize_citing_papers_prints_progress_by_default(
     )
     monkeypatch.setattr(
         workflow, "get_citation_passage_details",
-        lambda *args: {"passages": [], "target_citation_labels": []},
+        lambda *args: {
+            "passages": [],
+            "target_citation_labels": [],
+            "target_citation_spans": [],
+        },
     )
     monkeypatch.setattr(workflow, "summarize_paper", summarize)
 
@@ -106,6 +112,7 @@ def test_summarize_citing_papers_prints_progress_by_default(
         "record": citing,
         "passages": [],
         "target_citation_labels": [],
+        "target_citation_spans": [],
         "summary": (
             "No citation passages were available, so there is not enough "
             "context to determine how this paper uses Target (2025)."

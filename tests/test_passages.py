@@ -62,10 +62,32 @@ def test_find_citation_passage_details_returns_target_anchor_text():
     assert find_citation_passage_details(html, target) == {
         "passages": ["Previous simulations [56] show this effect."],
         "target_citation_labels": ["[56]"],
+        "target_citation_spans": [[[21, 25]]],
     }
     assert find_citation_passages(html, target) == [
         "Previous simulations [56] show this effect."
     ]
+
+
+def test_find_citation_passage_details_tracks_numeric_citation_position():
+    html = r"""
+    <article>
+      <p>\(\sigma_{\log_{10}J}\sim 0.3\text{--}0.5\) (see, e.g.,
+        Refs. [27, <a href="#bib.bib1">1</a>])</p>
+      <li id="bib.bib1">2025MNRAS.544.2946A</li>
+    </article>
+    """
+    target = {
+        "bibcode": "2025MNRAS.544.2946A",
+        "title": "Target paper",
+    }
+
+    result = find_citation_passage_details(html, target)
+    passage = result["passages"][0]
+    start, end = result["target_citation_spans"][0][0]
+
+    assert passage[start:end] == "1"
+    assert start == passage.rindex("1")
 
 
 def test_find_citation_passages_matches_unique_author_year_reference():

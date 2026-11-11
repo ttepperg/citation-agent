@@ -59,6 +59,9 @@ def summarize_citing_papers(
             "target_citation_labels": passage_details[
                 "target_citation_labels"
             ],
+            "target_citation_spans": passage_details[
+                "target_citation_spans"
+            ],
             "summary": summary_result["summary"],
             "summary_metadata": summary_result["metadata"],
         })

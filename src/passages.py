@@ -48,7 +48,11 @@ class _CitationParser(HTMLParser):
         elif self.paragraph is not None and tag == "a":
             href = attrs.get("href", "")
             if href.startswith("#bib."):
-                self.citation_anchor = {"id": href[1:], "text": []}
+                self.citation_anchor = {
+                    "id": href[1:],
+                    "text": [],
+                    "start": sum(map(len, self.paragraph["text"])),
+                }
                 self.paragraph["references"].append(self.citation_anchor)
 
     def handle_data(self, data):
@@ -128,6 +132,7 @@ def find_citation_passage_details(html, target_record):
 
     passages = []
     target_citation_labels = []
+    target_citation_spans = []
     for paragraph in parser.paragraphs:
         matches = [
             reference for reference in paragraph["references"]
@@ -135,14 +140,24 @@ def find_citation_passage_details(html, target_record):
         ]
         if not matches:
             continue
-        passages.append(" ".join("".join(paragraph["text"]).split()))
+        raw_text = "".join(paragraph["text"])
+        passages.append(" ".join(raw_text.split()))
+        passage_spans = []
         for match in matches:
             label = " ".join("".join(match["text"]).split())
             if label and label not in target_citation_labels:
                 target_citation_labels.append(label)
+            if label:
+                prefix = raw_text[:match["start"]]
+                start = len(" ".join(prefix.split()))
+                if prefix and prefix[-1].isspace():
+                    start += 1
+                passage_spans.append([start, start + len(label)])
+        target_citation_spans.append(passage_spans)
     return {
         "passages": passages,
         "target_citation_labels": target_citation_labels,
+        "target_citation_spans": target_citation_spans,
     }
 
 
@@ -178,7 +193,11 @@ def get_citation_passage_details(target_record, citing_paper, token=None):
         resolver_request, "ADS link resolver", read=True, allow_404=True
     )
     if resolver_data is None:
-        return {"passages": [], "target_citation_labels": []}
+        return {
+            "passages": [],
+            "target_citation_labels": [],
+            "target_citation_spans": [],
+        }
     resolved_url = json.loads(resolver_data)["link"]
     html_url = resolved_url.replace("arxiv.org/abs/", "arxiv.org/html/", 1)
     _, html = _get_url(
@@ -189,7 +208,11 @@ def get_citation_passage_details(target_record, citing_paper, token=None):
         allow_403=True,
     )
     if html is None:
-        return {"passages": [], "target_citation_labels": []}
+        return {
+            "passages": [],
+            "target_citation_labels": [],
+            "target_citation_spans": [],
+        }
     return find_citation_passage_details(
         html.decode("utf-8", errors="replace"), target_record
     )
